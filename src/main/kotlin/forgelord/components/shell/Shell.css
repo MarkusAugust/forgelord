@@ -1,0 +1,11 @@
+@layer forgelord-components {
+  .forgelord-shell {
+    display: grid;
+    gap: var(--lt-spacing-4);
+  }
+
+  .forgelord-shell-body {
+    display: grid;
+    gap: var(--lt-spacing-2);
+  }
+}

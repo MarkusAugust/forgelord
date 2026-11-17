@@ -1,0 +1,7 @@
+@layer forgelord-components {
+  /* LO-TEK's plain list has no gap between its items, and cards need one. */
+  .forgelord-card-list {
+    display: grid;
+    gap: var(--lt-spacing-4);
+  }
+}
