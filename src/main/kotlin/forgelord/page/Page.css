@@ -1,0 +1,18 @@
+@layer forgelord-page {
+  /* What every page has: LO-TEK's canvas and text colours, which follow light and dark, and room
+     around the content. */
+  body {
+    margin: 0;
+    padding: var(--lt-spacing-8) var(--lt-spacing-4);
+    background: var(--lt-color-neutral-canvas);
+    color: var(--lt-color-neutral-text);
+  }
+
+  /* A width to read at, until a page sets its own with a class. */
+  main {
+    display: grid;
+    gap: var(--lt-spacing-4);
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+}
