@@ -1,0 +1,12 @@
+@layer forgelord-page {
+  .forgelord-ledger-page {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+
+  .forgelord-ledger-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lt-spacing-2);
+  }
+}
