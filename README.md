@@ -30,6 +30,60 @@ Build → Build Project (⌘F9). Reload the page to see the change.
 Or, without downloading anything, open it in GitHub Codespaces. The app starts by itself, and the
 Streamlord extension is installed.
 
+## Architecture
+
+Each box is a folder under `src/main/kotlin/forgelord/`, and an arrow means "uses": `quests/web`
+imports from `components`.
+
+```mermaid
+flowchart TD
+    subgraph app ["The app"]
+        hello["hello"]
+        web["quests/web"]
+        quests["quests"]
+        client["quests/client"]
+        components["components"]
+        page["page"]
+        configuration["configuration"]
+    end
+    subgraph source ["A separate service"]
+        ledger["ledger"]
+    end
+    hello --> page
+    web --> components
+    web --> page
+    web --> quests
+    quests <--> client
+    components --> page
+    client -. HTTP .-> ledger
+    ledger --> components
+    ledger --> page
+```
+
+`page/` uses none of the others, and `components/` knows nothing of quests, so both can go into
+another app as they are. Nothing in the app imports `ledger/`: the board reaches it over HTTP, the
+way it would reach a real service. It runs in the same app only so there is one thing to start. `quests` and `quests/client` use each other, since the service
+calls the client and the client turns the Ledger's JSON into the board's own types.
+`configuration/` sets up Streamlord, the Content-Security-Policy and the Ledger's address, and
+Spring hands them to the rest.
+
+```text
+src/
+├── main/
+│   ├── kotlin/forgelord/
+│   │   ├── hello/          Lesson 1, in one file
+│   │   ├── quests/         the board's types, and the service that reads them
+│   │   │   ├── web/        the controller, the views and the form's rules
+│   │   │   └── client/     the Ledger over HTTP
+│   │   ├── components/     what every page can use: field, card list, toast and more
+│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
+│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address
+│   │   └── ledger/         the stand-in for a real source service
+│   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
+└── test/kotlin/forgelord/
+    └── exercises/          the exercises, switched off
+```
+
 ## Lesson 1: Hello
 
 <http://localhost:8080/hello> has one field and one button. Read
@@ -142,10 +196,8 @@ Read it in this order:
 | `quests/QuestService.kt` | The board as one `StateFlow`, read from the Ledger while anyone watches |
 | `quests/client/` | The Ledger over HTTP, and its JSON mapped to the board's own types |
 | `quests/web/QuestForm.kt` | The rules for a new quest, on the server and nowhere else |
-| `components/` | Status message, field, error summary, card list, shell, toast |
-| `page/` | The page around everything: LO-TEK, the CSS, the scripts |
-| `configuration/` | The Streamlord bean, the Content-Security-Policy, the Ledger's address |
-| `ledger/` | The stand-in for a real source service |
+
+The rest of the folders are in the tree under [Architecture](#architecture).
 
 The exercises are in
 [`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
@@ -270,13 +322,14 @@ Day one can skip this part. It is what keeps the app in shape as it grows.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Seven tests hold the structure:
+once, for the page's CSS. Eight tests hold the structure:
 
 - `ComponentBoundaryTest`, `PageBoundaryTest`, `QuestsBoundaryTest` and `HelloBoundaryTest` check
   what each package may depend on.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
+- `ReadmeTest` checks that the diagram and the tree under Architecture name every folder.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
 
