@@ -1,0 +1,18 @@
+{
+  "name": "Forgelord",
+  "image": "mcr.microsoft.com/devcontainers/java:21",
+  "customizations": {
+    "vscode": {
+      "extensions": ["MarkusAugust.streamlord"]
+    }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "The board at Hookford",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "./gradlew classes",
+  "postAttachCommand": "./gradlew bootRun"
+}
