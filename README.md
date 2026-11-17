@@ -429,10 +429,10 @@ Read it in this order:
 | `quests/web/QuestView.kt` | The HTML: the page, and the board in each of its four states |
 | `quests/web/QuestFormView.kt` | The HTML of the form, with the server's verdict on each field |
 | `quests/web/QuestForm.kt` | The rules for a new quest, on the server and nowhere else |
-| `quests/QuestResult.kt` | The four states, and what became of a write |
+| `quests/QuestResult.kt` | The four states, what the Ledger answered, and what became of a write |
 | `quests/QuestService.kt` | The board as a `StateFlow`, as in lesson 3, but read from the Ledger |
 | `quests/Quest.kt` | A quest as the board knows it |
-| `quests/client/` | The Ledger over HTTP, and its JSON turned into a `Quest` |
+| `quests/client/` | The Ledger over HTTP: its JSON turned into a `Quest`, its status codes into the board's words |
 | `ledger/` | The Ledger itself. Exercise 9 changes it, as you would ask the team that owns a real one |
 
 The exercises are in
@@ -500,22 +500,30 @@ if (ledger.has(entry.title)) {
 }
 ```
 
-Add `TAKEN` to `WriteResult` in `QuestResult.kt`. In `QuestService.write`, catch the conflict
-before `RestClientException`. `Conflict` is a kind of `RestClientException`, and Kotlin uses the
-first `catch` that matches:
+Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
+of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
+is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
 
 ```kotlin
 } catch (_: HttpClientErrorException.Conflict) {
     WriteResult.TAKEN
-} catch (_: RestClientException) {
+} catch (e: Exception) {
 ```
 
-Now build. The build fails in `ViewController.nail`: the `when` over the result no longer covers
-every case. Add the branch:
+`QuestService` hands the result on as it is, and needs no change.
+
+Now build. The build fails twice in `ViewController`: neither `when` over the result covers every
+case any more. In `nail`, add the branch:
 
 ```kotlin
 WriteResult.TAKEN ->
     patchElements(fragment { questForm(emptySignals, listOf(Fault("name", "${checked.quest.name} is already on the post."))) })
+```
+
+A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
+
+```kotlin
+WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
 
 </details>
@@ -529,13 +537,13 @@ WriteResult.TAKEN ->
 - `when (result) { QuestResult.Loading -> ...; is QuestResult.Found -> ... }` in `boardView`. `is`
   checks the type, and in that branch `result` has it: `result.quests` works. Leave a state out,
   and the build fails.
-- `enum class WriteResult { DONE, REFUSED }`. A fixed set of values.
+- `enum class WriteResult { DONE, CLOSED, GONE }`. A fixed set of values.
 - `object QuestPageClasses` and `val questPageCss by lazy { ... }` in
   [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
   is a class with exactly one instance. `by lazy` works the value out the first time it is read.
 - `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
-- `try { ... } catch (_: RestClientException) { ... }` in `QuestService.write`. `try` gives a value,
-  as `if` does. `_` in place of a name says the exception is not used.
+- `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
+  gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
   without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
 

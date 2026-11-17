@@ -83,8 +83,10 @@ class ViewController(
                             patchElements(fragment { questForm(emptySignals) })
                             patchSignals(streamlord.codec.encode(QuestSignals()))
                         }
-                        WriteResult.REFUSED ->
-                            executeScript(showDangerToast(TOASTS_ID, "The Ledger is closed. The quest did not go up."))
+                        // The Ledger has nothing a new quest could be gone from, so GONE says no
+                        // more here than CLOSED does.
+                        WriteResult.CLOSED, WriteResult.GONE ->
+                            executeScript(showDangerToast(TOASTS_ID, "The Ledger did not take it. The quest did not go up."))
                     }
             }
         }
@@ -92,7 +94,7 @@ class ViewController(
 
     /**
      * One more rider. Answers 204 and nothing else when it went through; the new count goes out
-     * down the board's stream. When the Ledger refuses, the one who clicked gets a toast.
+     * down the board's stream. When it did not, the one who clicked gets a toast that says why.
      */
     @PostMapping("/quests/{id}/ride")
     fun rideOut(
@@ -104,12 +106,17 @@ class ViewController(
         // An HTML form on another site can send form data or plain text, never JSON.
         request.readSignals(streamlord)
 
-        if (quests.rideOut(id) == WriteResult.DONE) {
-            response.status = HttpStatus.NO_CONTENT.value()
-            return null
-        }
+        val why =
+            when (quests.rideOut(id)) {
+                WriteResult.DONE -> {
+                    response.status = HttpStatus.NO_CONTENT.value()
+                    return null
+                }
+                WriteResult.GONE -> "That quest is no longer on the post."
+                WriteResult.CLOSED -> "The Ledger did not take it."
+            }
         return response.datastarStream(streamlord, request = request) {
-            executeScript(showDangerToast(TOASTS_ID, "The Ledger is closed. Nobody rode out."))
+            executeScript(showDangerToast(TOASTS_ID, "$why Nobody rode out."))
         }
     }
 }

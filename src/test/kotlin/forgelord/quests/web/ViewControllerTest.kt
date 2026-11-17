@@ -88,6 +88,16 @@ class ViewControllerTest {
     }
 
     @Test
+    fun `a ride on a quest the Ledger no longer has gets a toast that says so`() {
+        ledger.server.expect(requestTo("http://ledger.test/ledger/quests/cut-ropes/riders"))
+            .andRespond(withStatus(HttpStatus.NOT_FOUND))
+
+        val result = mvc.datastar(HttpMethod.POST, "/quests/cut-ropes/ride", "{}")
+
+        datastarEvents(result.response.contentAsString).assertPatchElements(containing = "no longer on the post")
+    }
+
+    @Test
     fun `a ride posted as a plain form, as another site could, is refused`() {
         val result =
             mvc.post()

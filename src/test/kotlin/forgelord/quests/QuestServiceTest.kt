@@ -82,11 +82,11 @@ class QuestServiceTest {
         }
 
     @Test
-    fun `a refused ride is refused, and nothing is thrown`() =
+    fun `a ride the Ledger does not take is closed, and nothing is thrown`() =
         runTest(timeout = LIMIT) {
             ledger.server.expect(requestTo(RIDERS_URL)).andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE))
 
-            assertEquals(WriteResult.REFUSED, service().rideOut("cut-ropes"))
+            assertEquals(WriteResult.CLOSED, service().rideOut("cut-ropes"))
         }
 
     @Test
