@@ -6,6 +6,18 @@ import java.io.File
 object Sources {
     val root = File("src/main/kotlin/forgelord")
 
+    /**
+     * The folders the architecture is told in: those under `forgelord/`, two levels down, except
+     * the components inside `components/`. `quests`, `quests/client` and `quests/web` are three.
+     */
+    val folders: List<String> =
+        root.walkTopDown().maxDepth(2)
+            .filter { it.isDirectory && it != root }
+            .map { it.relativeTo(root).invariantSeparatorsPath }
+            .filterNot { it.startsWith("components/") }
+            .sorted()
+            .toList()
+
     /** Every file with [extension] under [dir], a package path such as `components`. */
     fun files(
         dir: String,
@@ -17,21 +29,35 @@ object Sources {
             .sortedBy { it.path }
             .toList()
 
+    /** A line in one folder that uses another: the [folder] used, and [where] as `path:line: text`. */
+    data class Use(
+        val folder: String,
+        val where: String,
+    )
+
     /**
-     * Every line in [files] that refers to one of [packages], such as `quests`, by import or by
-     * full name, as `path:line: text`. The `package` line itself is left out, and so is text in
-     * strings: `"forgelord.ledger.url"` is the name of a setting, not a reference to code.
+     * Every line in [folder] that uses another of the [folders], by import or by full name. A
+     * folder's files are its own and not those of a folder below it: `quests` does not answer
+     * for `quests/web`. The `package` line is left out, and so are comments and text in strings:
+     * `"forgelord.ledger.url"` is the name of a setting, not a reference to code.
      */
-    fun references(
-        files: List<File>,
-        packages: List<String>,
-    ): List<String> =
-        files.flatMap { file ->
-            file.readLines().mapIndexedNotNull { index, line ->
-                val text = line.trim()
-                val code = text.replace(Regex(""""(?:\\.|[^"\\])*""""), "\"\"")
-                val refers = packages.any { "forgelord.$it." in code || code.endsWith("forgelord.$it") }
-                if (refers && !text.startsWith("package ")) "${file.path}:${index + 1}: $text" else null
+    fun uses(folder: String): List<Use> =
+        files(folder)
+            .filter { folderOf(it.parentFile.relativeTo(root).invariantSeparatorsPath.split("/")) == folder }
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    val text = line.trim()
+                    if (listOf("package ", "//", "/*", "*").any { text.startsWith(it) }) return@mapIndexedNotNull null
+                    val code = text.replace(Regex(""""(?:\\.|[^"\\])*""""), "\"\"")
+                    // The lower-case names after `forgelord.` are the package, and perhaps a function.
+                    val used = Regex("""\bforgelord((?:\.[a-z]+\b)+)""").find(code)?.let { folderOf(it.groupValues[1].drop(1).split(".")) }
+                    if (used != null && used != folder) Use(used, "${file.path}:${index + 1}: $text") else null
+                }
             }
-        }
+
+    /** The folder that [path] is in or under: the longest of [folders] that starts it. */
+    private fun folderOf(path: List<String>): String? =
+        path.indices.reversed()
+            .map { path.take(it + 1).joinToString("/") }
+            .firstOrNull { it in folders }
 }

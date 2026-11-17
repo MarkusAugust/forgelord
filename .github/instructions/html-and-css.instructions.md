@@ -36,7 +36,7 @@ fun FlowContent.statusMessage(status: Status, text: String) {
 
 - Prefer LO-TEK classes and variants. Add CSS only for what LO-TEK cannot do, with LO-TEK tokens (`--lt-*`), never hard-coded colours or pixels.
 - The layers are `lotek, forgelord-components, forgelord-page`, declared in `page/Page.kt`. Component CSS goes in `@layer forgelord-components`; a page's CSS in `@layer forgelord-page`. CSS outside a layer would beat all of them, so there is none.
-- Register each new component CSS file in `ComponentStyles.FILES`, relative to `components/`. `ComponentBoundaryTest` fails if one is missing.
+- Register each new component CSS file in `ComponentStyles.FILES`, relative to `components/`. `ComponentStylesTest` fails if one is missing.
 - The CSS reaches the page in one `<style>` that carries the CSP nonce. Do not add `<link>`s for our own CSS.
 
 ## Component boundaries

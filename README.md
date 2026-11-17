@@ -553,14 +553,17 @@ The lessons do not need this section.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Ten tests hold the structure:
+once, for the page's CSS. Six tests hold the structure:
 
-- `ComponentBoundaryTest`, `PageBoundaryTest`, `QuestsBoundaryTest`, `HelloBoundaryTest`,
-  `NoticeBoundaryTest` and `TogetherBoundaryTest` check what each package may depend on.
+- `ArchitectureTest` has one table of what each folder uses of the others, and checks the code
+  against it. A new folder needs a row before it can use anything.
+- `ComponentStylesTest` checks that the components' CSS names no domain, and that every file of it
+  is on the page.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
-- `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder.
+- `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
+  diagram's arrows are the ones in `ArchitectureTest`.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
 
