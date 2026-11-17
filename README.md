@@ -57,6 +57,11 @@ Streamlord extension is installed.
 [`hello/HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt) from top to bottom.
 It is the whole lesson: the page, what happens when you click, and the HTML that comes back.
 
+`greet` reads the signals with `readSignalsOr(HelloSignals(), streamlord)`. It turns the JSON into
+a `HelloSignals`. A signal missing from the JSON gets its default in the class, and a request with
+no signals at all gets the `HelloSignals()` given in the call. A request whose body is not JSON is
+refused with `415 Unsupported Media Type`.
+
 The exercises are tests that are switched off. Open
 [`exercises/HelloExercisesTest.kt`](src/test/kotlin/forgelord/exercises/HelloExercisesTest.kt), delete
 the `@Disabled` line above one, and run it from the green arrow beside it. It fails. Change the code
@@ -211,6 +216,11 @@ All in [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt
 
 What is new since lesson 1: the cards come from a list, the URL says which quest was clicked, and
 the server keeps a count. Click "Ride out" and the card shows the new count.
+
+`rideOut` needs no signals, but calls `readSignals(streamlord)` anyway. It gives the signals as
+plain JSON, with no class to put them in, and refuses a body that is not JSON with 415, as
+`readSignalsOr` does. The refusal is why it is there: an HTML form on another site can send form
+data or plain text, never JSON, so it cannot make a visitor ride out without knowing it.
 
 Open the page in a second window, and click there. The first window still shows the old number,
 until you reload it. The answer to a click goes only to the window that clicked.
