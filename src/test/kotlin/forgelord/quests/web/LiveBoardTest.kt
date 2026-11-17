@@ -14,8 +14,11 @@ import kotlin.test.Test
 
 /**
  * The whole loop on a real server, with the real Ledger behind HTTP: a page has the board open,
- * someone rides out, the Ledger closes and opens again, and every change comes down the stream
- * the page already had.
+ * someone rides out, someone nails up a quest, the Ledger is wiped, closes and opens again, and
+ * every change comes down the stream the page already had.
+ *
+ * This is the one place where the board's JSON meets the Ledger's own, on every route the board
+ * uses. The other tests hold the client to JSON written by hand.
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT, properties = ["forgelord.ledger.poll-interval=100ms"])
 @AutoConfigureRestTestClient
@@ -38,6 +41,12 @@ class LiveBoardTest {
                 post("/quests/a-tenth-of-the-wood/ride")
                 page.awaitPatchElements(selector = "#board", containing = "One has ridden out.")
 
+                post("/quests", """{"quest":{"name":"Wolves at the Ford","giver":"Ulf","text":"Six of them.","reward":"20"}}""")
+                page.awaitPatchElements(selector = "#board", containing = "Wolves at the Ford")
+
+                post("/ledger/wipe")
+                page.awaitPatchElements(selector = "#board", containing = "The post is bare.")
+
                 post("/ledger/close")
                 page.awaitPatchElements(selector = "#board", containing = "The Ledger is closed.")
 
@@ -46,14 +55,17 @@ class LiveBoardTest {
             }
         }
 
-    /** A post as Datastar sends one: JSON, so the CSRF check lets it through. */
-    private fun post(path: String) {
+    /** A post as Datastar sends one: the signals as JSON, so the CSRF check lets it through. */
+    private fun post(
+        path: String,
+        signals: String = "{}",
+    ) {
         client
             .post()
             .uri(path)
             .header("Datastar-Request", "true")
             .contentType(MediaType.APPLICATION_JSON)
-            .body("{}")
+            .body(signals)
             .exchange()
             .expectStatus().is2xxSuccessful
     }
