@@ -6,17 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * `components/` holds what another page could use as it is. It may use `page/`, but not the
- * domain or the configuration, and its CSS says nothing about quests either.
+ * `components/` holds what another page could use as it is. `ArchitectureTest` keeps its Kotlin
+ * away from the domain. This keeps its CSS away too, and on the page.
  */
-class ComponentBoundaryTest {
-    @Test
-    fun `components know nothing about the domain or the configuration`() {
-        val found = Sources.references(Sources.files("components"), listOf("quests", "ledger", "configuration", "hello", "notice", "together"))
-
-        assertTrue(found.isEmpty(), "components/ refers to what it must not:\n" + found.joinToString("\n"))
-    }
-
+class ComponentStylesTest {
     @Test
     fun `component CSS says nothing about the domain`() {
         val words = listOf("quest", "ledger", "gallowmark", "hookford")

@@ -18,7 +18,7 @@ someone could copy.
 ```text
 src/main/kotlin/forgelord/
 ├── Main.kt
-├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client
+├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client, the coroutine scope
 ├── page/            the page around everything, Content, fragment { }, stylesheets (widget/ in widget apps)
 ├── hello/           lesson 1, on its own: page/, LO-TEK and Streamlord, nothing else
 ├── notice/          lesson 2, on its own, like hello/
@@ -30,7 +30,7 @@ src/main/kotlin/forgelord/
 
 The rules for each part are in `.github/instructions/`:
 
-- `widget-architecture.instructions.md`: packages, what may depend on what, and the boundary tests.
+- `widget-architecture.instructions.md`: packages, what may depend on what, and the test that holds it.
 - `html-and-css.instructions.md`: markup with kotlinx.html, CSS classes, layers, components.
 - `streamlord-datastar.instructions.md`: streams, commands, signals, CSP.
 
@@ -41,7 +41,7 @@ The rules for each part are in `.github/instructions/`:
 - Datastar attributes come from Streamlord's functions (`dataOnClick`, `dataBind`, `post(…)`), never
   written by hand.
 - The board shows four states: loading, data, empty and error. A failure is a state, not an exception.
-- A boundary is a test. When you add or move a package, update the tests that guard it.
+- A boundary is a test. When you add or move a package, update `MAY_USE` in `ArchitectureTest` and the README's diagram.
 - Write in English, in short sentences. Comments say why, not what.
 - `src/test/kotlin/forgelord/exercises/` holds the README's exercises as `@Disabled` tests. Leave
   them disabled on master; the solutions in the README must make them pass.

@@ -4,7 +4,7 @@ import forgelord.page.stylesheet
 
 /**
  * Every component's CSS file, relative to `components/`. A new CSS file goes here, or
- * ComponentBoundaryTest fails.
+ * ComponentStylesTest fails.
  */
 object ComponentStyles {
     val FILES =

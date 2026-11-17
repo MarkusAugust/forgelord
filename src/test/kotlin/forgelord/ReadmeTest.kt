@@ -6,18 +6,11 @@ import kotlin.test.assertEquals
 
 /**
  * The README's "Where the code is", in lesson 4, draws the folders twice, as a diagram and as a
- * tree. A folder added or removed in the code, and not in the README, fails here. The arrows are
- * not checked: the boundary tests hold those.
+ * tree. A folder added or removed in the code, and not in the README, fails here. So does an
+ * arrow in the diagram that `ArchitectureTest.MAY_USE` does not have, or the other way round.
  */
 class ReadmeTest {
-    /** The folders under `forgelord/`, two levels down, except the components inside `components/`. */
-    private val folders =
-        Sources.root.walkTopDown().maxDepth(2)
-            .filter { it.isDirectory && it != Sources.root }
-            .map { it.relativeTo(Sources.root).invariantSeparatorsPath }
-            .filterNot { it.startsWith("components/") }
-            .sorted()
-            .toList()
+    private val folders = Sources.folders
 
     private val architecture =
         File("README.md").readText()
@@ -35,6 +28,22 @@ class ReadmeTest {
                 .toList()
 
         assertEquals(folders, named, "The diagram in the README and the folders differ")
+    }
+
+    @Test
+    fun `the diagram's arrows are what each folder uses`() {
+        val diagram = architecture.substringAfter("```mermaid\n").substringBefore("```")
+        // hello["hello"] gives a box its name. The arrows use the short name before the bracket.
+        val names = Regex("""(\w+)\["([a-z/]+)"]""").findAll(diagram).associate { it.groupValues[1] to it.groupValues[2] }
+        val drawn = names.values.associateWith { mutableSetOf<String>() }
+        // The dotted arrow to the Ledger is HTTP, not an import, and is left out.
+        Regex("""^\s*(\w+) (<)?--> (\w+)\s*$""", RegexOption.MULTILINE).findAll(diagram).forEach {
+            val (from, both, to) = it.destructured
+            drawn.getValue(names.getValue(from)) += names.getValue(to)
+            if (both.isNotEmpty()) drawn.getValue(names.getValue(to)) += names.getValue(from)
+        }
+
+        assertEquals<Map<String, Set<String>>>(ArchitectureTest.MAY_USE.toSortedMap(), drawn.toSortedMap(), "The arrows in the README and MAY_USE differ")
     }
 
     @Test

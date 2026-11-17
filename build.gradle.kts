@@ -44,6 +44,8 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation(kotlin("test"))
+    // A test scope whose clock the test moves, for QuestService's two seconds between asks.
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     // Reads a Datastar response back into events, and the editors' check as a library.
     testImplementation("io.github.markusaugust.streamlord:streamlord-test:$streamlord")
     testImplementation("io.github.markusaugust.streamlord:streamlord-analysis:$streamlord")

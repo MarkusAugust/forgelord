@@ -57,6 +57,11 @@ Streamlord extension is installed.
 [`hello/HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt) from top to bottom.
 It is the whole lesson: the page, what happens when you click, and the HTML that comes back.
 
+`greet` reads the signals with `readSignalsOr(HelloSignals(), streamlord)`. It turns the JSON into
+a `HelloSignals`. A signal missing from the JSON gets its default in the class, and a request with
+no signals at all gets the `HelloSignals()` given in the call. A request whose body is not JSON is
+refused with `415 Unsupported Media Type`.
+
 The exercises are tests that are switched off. Open
 [`exercises/HelloExercisesTest.kt`](src/test/kotlin/forgelord/exercises/HelloExercisesTest.kt), delete
 the `@Disabled` line above one, and run it from the green arrow beside it. It fails. Change the code
@@ -211,6 +216,11 @@ All in [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt
 
 What is new since lesson 1: the cards come from a list, the URL says which quest was clicked, and
 the server keeps a count. Click "Ride out" and the card shows the new count.
+
+`rideOut` needs no signals, but calls `readSignals(streamlord)` anyway. It gives the signals as
+plain JSON, with no class to put them in, and refuses a body that is not JSON with 415, as
+`readSignalsOr` does. The refusal is why it is there: an HTML form on another site can send form
+data or plain text, never JSON, so it cannot make a visitor ride out without knowing it.
 
 Open the page in a second window, and click there. The first window still shows the old number,
 until you reload it. The answer to a click goes only to the window that clicked.
@@ -389,8 +399,8 @@ another app as they are. Nothing in the app imports `ledger/`: the board reaches
 way it would reach a real service. It runs in the same app only so there is one thing to start.
 `quests` and `quests/client` use each other, since the service calls the client and the client
 turns the Ledger's JSON into the board's own types.
-`configuration/` sets up Streamlord, the Content-Security-Policy and the Ledger's address, and
-Spring hands them to the rest.
+`configuration/` sets up Streamlord, the Content-Security-Policy, the Ledger's address and the
+scope the board asks the Ledger in, and Spring hands them to the rest.
 
 ```text
 src/
@@ -419,10 +429,10 @@ Read it in this order:
 | `quests/web/QuestView.kt` | The HTML: the page, and the board in each of its four states |
 | `quests/web/QuestFormView.kt` | The HTML of the form, with the server's verdict on each field |
 | `quests/web/QuestForm.kt` | The rules for a new quest, on the server and nowhere else |
-| `quests/QuestResult.kt` | The four states, and what became of a write |
+| `quests/QuestResult.kt` | The four states, what the Ledger answered, and what became of a write |
 | `quests/QuestService.kt` | The board as a `StateFlow`, as in lesson 3, but read from the Ledger |
 | `quests/Quest.kt` | A quest as the board knows it |
-| `quests/client/` | The Ledger over HTTP, and its JSON turned into a `Quest` |
+| `quests/client/` | The Ledger over HTTP: its JSON turned into a `Quest`, its status codes into the board's words |
 | `ledger/` | The Ledger itself. Exercise 9 changes it, as you would ask the team that owns a real one |
 
 The exercises are in
@@ -490,22 +500,30 @@ if (ledger.has(entry.title)) {
 }
 ```
 
-Add `TAKEN` to `WriteResult` in `QuestResult.kt`. In `QuestService.write`, catch the conflict
-before `RestClientException`. `Conflict` is a kind of `RestClientException`, and Kotlin uses the
-first `catch` that matches:
+Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
+of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
+is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
 
 ```kotlin
 } catch (_: HttpClientErrorException.Conflict) {
     WriteResult.TAKEN
-} catch (_: RestClientException) {
+} catch (e: Exception) {
 ```
 
-Now build. The build fails in `ViewController.nail`: the `when` over the result no longer covers
-every case. Add the branch:
+`QuestService` hands the result on as it is, and needs no change.
+
+Now build. The build fails twice in `ViewController`: neither `when` over the result covers every
+case any more. In `nail`, add the branch:
 
 ```kotlin
 WriteResult.TAKEN ->
     patchElements(fragment { questForm(emptySignals, listOf(Fault("name", "${checked.quest.name} is already on the post."))) })
+```
+
+A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
+
+```kotlin
+WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
 
 </details>
@@ -519,13 +537,13 @@ WriteResult.TAKEN ->
 - `when (result) { QuestResult.Loading -> ...; is QuestResult.Found -> ... }` in `boardView`. `is`
   checks the type, and in that branch `result` has it: `result.quests` works. Leave a state out,
   and the build fails.
-- `enum class WriteResult { DONE, REFUSED }`. A fixed set of values.
+- `enum class WriteResult { DONE, CLOSED, GONE }`. A fixed set of values.
 - `object QuestPageClasses` and `val questPageCss by lazy { ... }` in
   [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
   is a class with exactly one instance. `by lazy` works the value out the first time it is read.
 - `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
-- `try { ... } catch (_: RestClientException) { ... }` in `QuestService.write`. `try` gives a value,
-  as `if` does. `_` in place of a name says the exception is not used.
+- `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
+  gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
   without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
 
@@ -535,14 +553,17 @@ The lessons do not need this section.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Ten tests hold the structure:
+once, for the page's CSS. Six tests hold the structure:
 
-- `ComponentBoundaryTest`, `PageBoundaryTest`, `QuestsBoundaryTest`, `HelloBoundaryTest`,
-  `NoticeBoundaryTest` and `TogetherBoundaryTest` check what each package may depend on.
+- `ArchitectureTest` has one table of what each folder uses of the others, and checks the code
+  against it. A new folder needs a row before it can use anything.
+- `ComponentStylesTest` checks that the components' CSS names no domain, and that every file of it
+  is on the page.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
-- `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder.
+- `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
+  diagram's arrows are the ones in `ArchitectureTest`.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
 
