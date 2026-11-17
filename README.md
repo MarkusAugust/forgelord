@@ -1,17 +1,38 @@
 # Forgelord
 
 A starter for web apps in Kotlin and Spring MVC, with [Streamlord](https://streamlord.sobernetics.no)
-and [LO-TEK](https://lo-tek.sobernetics.no). Two lessons: a page that says hello, and a quest board
-from [Gallowmark](https://github.com/MarkusAugust/gallowmark) that every open window sees change at
-once. Nothing here needs Node or npm.
+and [LO-TEK](https://lo-tek.sobernetics.no). Four lessons, each a step from the one before: a page
+that says hello, a list with a button, the same list kept up to date in every open window, and a
+quest board from [Gallowmark](https://github.com/MarkusAugust/gallowmark) that reads its quests
+from another service. Nothing here needs Node or npm.
 
 ## How the pages work
 
 The server writes all the HTML. [Datastar](https://data-star.dev), one small script in the browser,
 sends what you typed to the server as JSON, and the server answers with new HTML for a part of the
-page. Datastar puts it in place by its `id`. The page holds no rules of its own. Streamlord is the
-Kotlin side of that: it reads what Datastar sends and writes what it gets back. LO-TEK is the design
+page. You write no JavaScript: what to show, and what is valid, is decided on the server.
+Streamlord is the Kotlin side of that: it reads what Datastar sends and writes what it gets back. LO-TEK is the design
 system: you call `Lt.button()`, and the button gets LO-TEK's classes.
+
+The words the code and the lessons use:
+
+- **Signal.** A named value Datastar keeps on the page. `dataBind("name")` ties a field to the
+  signal `name`, and Datastar sends every signal as JSON with each request: `{"name": "Ada"}`.
+- **Patch.** HTML the server sends for one part of the page. Datastar finds the element on the page
+  with the same `id` and puts the new one in its place.
+- **Morph.** How Datastar puts it in place: it changes only what differs, so a field you are typing
+  in keeps its text and the cursor.
+- **Stream.** Every Datastar answer here is a stream of server-sent events (SSE). In lessons 1
+  and 2 it carries one patch and closes. From lesson 3, the server keeps it open and writes a
+  patch whenever something changes.
+- **Command.** A POST that changes something on the server, such as "Ride out".
+- **Bean.** An object Spring creates once, when the app starts, and keeps. Each class marked
+  `@RestController`, `@Service` or `@Component` becomes one, and so does what each `@Bean` function in
+  `configuration/` returns.
+- **Injection.** Spring passes each bean the beans its constructor asks for. `HelloController` asks
+  for a `Streamlord`, and gets the one `StreamlordConfiguration` made.
+- **`application.properties`.** The app's settings, in `src/main/resources/`. Spring reads them
+  when the app starts.
 
 ## Run it
 
@@ -30,60 +51,6 @@ Build → Build Project (⌘F9). Reload the page to see the change.
 Or, without downloading anything, open it in GitHub Codespaces. The app starts by itself, and the
 Streamlord extension is installed.
 
-## Architecture
-
-Each box is a folder under `src/main/kotlin/forgelord/`, and an arrow means "uses": `quests/web`
-imports from `components`.
-
-```mermaid
-flowchart TD
-    subgraph app ["The app"]
-        hello["hello"]
-        web["quests/web"]
-        quests["quests"]
-        client["quests/client"]
-        components["components"]
-        page["page"]
-        configuration["configuration"]
-    end
-    subgraph source ["A separate service"]
-        ledger["ledger"]
-    end
-    hello --> page
-    web --> components
-    web --> page
-    web --> quests
-    quests <--> client
-    components --> page
-    client -. HTTP .-> ledger
-    ledger --> components
-    ledger --> page
-```
-
-`page/` uses none of the others, and `components/` knows nothing of quests, so both can go into
-another app as they are. Nothing in the app imports `ledger/`: the board reaches it over HTTP, the
-way it would reach a real service. It runs in the same app only so there is one thing to start. `quests` and `quests/client` use each other, since the service
-calls the client and the client turns the Ledger's JSON into the board's own types.
-`configuration/` sets up Streamlord, the Content-Security-Policy and the Ledger's address, and
-Spring hands them to the rest.
-
-```text
-src/
-├── main/
-│   ├── kotlin/forgelord/
-│   │   ├── hello/          Lesson 1, in one file
-│   │   ├── quests/         the board's types, and the service that reads them
-│   │   │   ├── web/        the controller, the views and the form's rules
-│   │   │   └── client/     the Ledger over HTTP
-│   │   ├── components/     what every page can use: field, card list, toast and more
-│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
-│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address
-│   │   └── ledger/         the stand-in for a real source service
-│   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
-└── test/kotlin/forgelord/
-    └── exercises/          the exercises, switched off
-```
-
 ## Lesson 1: Hello
 
 <http://localhost:8080/hello> has one field and one button. Read
@@ -95,6 +62,9 @@ The exercises are tests that are switched off. Open
 the `@Disabled` line above one, and run it from the green arrow beside it. It fails. Change the code
 until it passes.
 
+The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put the cursor on it
+and press Alt+Enter (⌥↩ on a Mac) to import it.
+
 ### Exercise 1: Change the greeting
 
 Make the page greet in your own words. There is no test: you are done when the page says it.
@@ -102,20 +72,21 @@ Make the page greet in your own words. There is no test: you are done when the p
 <details><summary>Solution</summary>
 
 Change the text in `greetingFor` in `HelloController.kt`, build, and reload the page. Then run the
-tests: `HelloControllerTest` checks the old words, so change them there too. That is what a test
-is for.
+tests: `HelloControllerTest` checks the old words, so change them there too.
 
 </details>
 
 ### Exercise 2: Where are you from?
 
 Add a second field, "Where are you from?". "Ada" from "Hookford" gets "Hello, Ada from Hookford.";
-with no place, still "Hello, Ada.".
+with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep yours: the test
+checks only the name and the place.
 
 <details><summary>Solution</summary>
 
-The field is a new signal, so it goes in three places: the class the server reads, the form, and
-the greeting.
+The field is a new signal, so it goes in four places: the class the server reads, the greeting,
+the form, and `greet`, which passes the signal on. `when` with nothing after it tries each
+condition in turn.
 
 ```kotlin
 data class HelloSignals(
@@ -156,7 +127,7 @@ they share the count.
 The controller is one object for the whole app, so a field on it is shared by every window.
 
 ```kotlin
-/** One count for the whole app: every window adds to the same number. */
+/** How many greetings, from every window. */
 private val greetings = AtomicInteger()
 ```
 
@@ -166,7 +137,7 @@ In `greet`:
 val number = greetings.incrementAndGet()
 
 return response.datastarStream(streamlord, request = request) {
-    patchElements(html { greeting("${greetingFor(signals.name.trim(), signals.from.trim())} Greeting number $number.") })
+    patchElements(fragment { greeting("${greetingFor(signals.name.trim(), signals.from.trim())} Greeting number $number.") })
 }
 ```
 
@@ -175,49 +146,331 @@ exercise 2, call `greetingFor(signals.name.trim())` instead.
 
 </details>
 
-## Lesson 2: The board
+### Exercise 4: Show the name as you type
+
+Under the field, show what is in it, letter by letter as it is typed. The server is not asked:
+`dataText` tells Datastar to keep an element's text equal to a signal.
+
+<details><summary>Solution</summary>
+
+In `helloForm`, after the `input`:
+
+```kotlin
+p {
+    lt(Lt.paragraph())
+    dataText(signal("name"))
+}
+```
+
+`signal("name")` writes `$name`, which is how Datastar refers to the signal `name`.
+
+Now break it on purpose. Write `dataText("$name")` instead. In a Kotlin string, `$name` means a
+Kotlin value called `name`, and Kotlin finds one: the `name` attribute of the `form` around the
+paragraph. kotlinx.html does not let you reach it from inside `p { }`, so the build fails, and the
+message names `var name`. Add `val name = "Ada"` on the line above. Now it compiles, and the page
+gets `data-text="Ada"`: Kotlin put its own `name` in the string, and Datastar never sees a signal.
+Run the tests: `AnalysisTest` fails and names the line. With the Streamlord plugin in IntelliJ IDEA
+or VS Code, the line is marked as you type it. Take both lines out again, and put `signal("name")`
+back.
+
+</details>
+
+### Kotlin in this lesson
+
+All in [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt):
+
+- `class HelloController(private val streamlord: Streamlord)`. The constructor's parameters are
+  written after the class name, and `val` makes each one a property of the object. Spring calls
+  the constructor and passes the `Streamlord` (injection, above).
+- `fun page(request: HttpServletRequest): String = page(...)`. A function whose body is one
+  expression is written with `=` and no `return`. The `page(...)` after `=` is a different
+  function with the same name, from `page/Page.kt`.
+- `produces = [MediaType.TEXT_HTML_VALUE]`. An argument given by its name. `[...]` makes an array,
+  and is only allowed in annotations.
+- `main { h1 { ... } }`. kotlinx.html: each tag is a function, and the code in the braces after it
+  writes what goes inside the tag. The braces are a lambda, a function without a name. When a
+  lambda is the last argument, it is written after the parentheses, and when it is the only one,
+  `()` is left out.
+- `+"Hello Gallowmark"`. `+` is an operator kotlinx.html defines on strings: it adds the text
+  inside the tag it is in.
+- `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
+  were a method on `FlowContent`, kotlinx.html's type for a tag that can hold other tags, and that
+  tag is `this` inside it.
+- `request.cspNonce`. An extension property Streamlord adds to the servlet request. It gives this
+  request's nonce: a one-time code that lets the page's own scripts run under the
+  Content-Security-Policy.
+- `data class HelloSignals(val name: String = "")`. A data class gets `equals`, `toString` and
+  `copy` made for it. `= ""` is the value used when the JSON has no `name`.
+- `if (name.isEmpty()) "Hello, stranger." else "Hello, $name."`. `if` is an expression: it gives a
+  value, so it can be the whole body after `=`. `$name` in a string puts in the value of `name`.
+
+## Lesson 2: A list and a command
+
+<http://localhost:8080/notice> shows three quests, each with a "Ride out" button. Read
+[`notice/NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt).
+
+What is new since lesson 1: the cards come from a list, the URL says which quest was clicked, and
+the server keeps a count. Click "Ride out" and the card shows the new count.
+
+Open the page in a second window, and click there. The first window still shows the old number,
+until you reload it. The answer to a click goes only to the window that clicked.
+
+### Exercise 5: A badge for a popular quest
+
+When three or more have ridden out on a quest, its card shows a badge that says "Popular". The
+test is in [`exercises/NoticeExercisesTest.kt`](src/test/kotlin/forgelord/exercises/NoticeExercisesTest.kt).
+
+<details><summary>Solution</summary>
+
+In `noticeCard`, after the paragraph with the count:
+
+```kotlin
+if (riders >= 3) {
+    span { lt(Lt.badge(color = BadgeColor.SUCCESS)); +"Popular" }
+}
+```
+
+Only the card changes. The count was already there: `riders` is the card's parameter.
+
+</details>
+
+### Kotlin in this lesson
+
+All in [`NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt):
+
+- `val NOTICES = listOf(...)`. A list that cannot be changed. It is declared outside the class, so
+  it is one list for the whole app.
+- `for (notice in NOTICES) { noticeCard(...) }`. A loop inside `main { }` writes one card for each
+  quest.
+- `NOTICES.associate { it.id to AtomicInteger() }` in `riders`. In a lambda with one parameter,
+  `it` is that parameter. `a to b` makes a pair, and `associate` makes a map from the pairs.
+- `@PathVariable id: String` in `rideOut`. The `{id}` part of `/notice/{id}/ride`.
+- `NOTICES.find { it.id == id } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)`. `find`
+  gives a `Notice?`: a `Notice`, or `null` when none matches. `?:` gives what is on its right
+  when what is on its left is `null`. After the line, Kotlin knows `notice` is not `null`.
+- `riders.getValue(id)`. Looks up a key that must be there, and throws an exception if it is not.
+  `riders[id]` would give `null` for a missing key.
+- `when (count) { 0 -> ...; 1 -> ...; else -> ... }` in `ridersText`. Picks the first branch that
+  matches, and gives its value.
+- `"notice-${notice.id}"`. `${...}` is needed when what goes in the string is more than a plain
+  name, such as `notice.id`.
+
+## Lesson 3: Every window sees it
+
+<http://localhost:8080/together> is lesson 2's list again. Open it in two windows and ride out in
+one: both show the new count. Read
+[`together/TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt), and
+compare it with lesson 2's.
+
+What changed:
+
+- **The count is a `MutableStateFlow`.** It holds a map from quest to count, and tells every open
+  stream when the map is replaced.
+- **Each page opens a stream as it loads, to `/together/board`.** The server holds that request
+  open, and sends the cards down it at once, then again whenever the count changes.
+- **"Ride out" answers `204 No Content`.** The answer has no HTML, because the new cards come down
+  every window's stream, the clicking one's included.
+- **The cards come from `cardList` in `components/`,** and the section around them from `shell`.
+  Lesson 2 wrote its card by hand. A component is a function more than one page uses; the board
+  in lesson 4 uses the same two. Inside `cardList`'s last lambda, `this` is a `FlowContent`, so
+  `h3 { }` and the other tags work there.
+
+### Exercise 6: Turn back
+
+A "Turn back" button beside "Ride out" takes one rider off the quest, never below none, and every
+open window shows the new count. The test is in
+[`exercises/TogetherExercisesTest.kt`](src/test/kotlin/forgelord/exercises/TogetherExercisesTest.kt).
+
+<details><summary>Solution</summary>
+
+A second command beside `rideOut`:
+
+```kotlin
+@PostMapping("/together/{id}/turn-back")
+@ResponseStatus(HttpStatus.NO_CONTENT)
+fun turnBack(
+    @PathVariable id: String,
+    request: HttpServletRequest,
+) {
+    request.readSignals(streamlord)
+    if (id !in riders.value) throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    riders.update { counts -> counts + (id to maxOf(0, counts.getValue(id) - 1)) }
+}
+```
+
+And in `cards`, at the bottom of the file, after the "Ride out" button:
+
+```kotlin
+button {
+    lt(Lt.button(variant = ButtonVariant.GHOST))
+    type = ButtonType.button
+    dataOnClick(post("/together/${quest.id}/turn-back"))
+    +"Turn back"
+}
+```
+
+Nothing else: the stream already sends the cards whenever `riders` changes.
+
+</details>
+
+### Kotlin in this lesson
+
+All in [`TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt):
+
+- `MutableStateFlow(...)`, `riders.value` and `riders.update { ... }`. From kotlinx.coroutines.
+  `value` is what the flow holds now, and `update` replaces it. You write no coroutine code here:
+  `sendLatest`, in the endpoint `board`, reads the flow for you.
+- `counts + (id to counts.getValue(id) + 1)` in `rideOut`. A map plus a pair is a new map, with
+  that key's value replaced. The old map is not changed. `+` is done before `to`, so the pair is
+  `id` and the count plus one.
+- `id !in riders.value`. `in` on a map asks whether the key is there.
+- `@ResponseStatus(HttpStatus.NO_CONTENT)` on `rideOut`. Makes Spring answer 204 instead of 200.
+  The function returns nothing, so the body is empty.
+- `cardList(QUESTS, cardId = { "together-${it.id}" }) { quest -> ... }`. Two lambdas: one passed
+  by name, and the last one after the parentheses. `quest ->` names the lambda's parameter instead
+  of `it`.
+- `const val TOGETHER_BOARD_ID`. A constant, known when the code is compiled.
+- `fun <T> FlowContent.cardList(items: List<T>, ...)` in
+  [`CardList.kt`](src/main/kotlin/forgelord/components/cardlist/CardList.kt). `<T>` is a type
+  parameter: the list can hold any type, and `cardId` and the card get items of that type.
+
+## Lesson 4: The board
 
 <http://localhost:8080> is the quest board at Hookford. Ride out on a quest, or nail up your own.
-Open it in two windows, and both follow.
+Open it in two windows, and both follow, as in lesson 3.
 
-The board reads its quests from the Ledger, a separate service it calls over HTTP. Here the Ledger
-runs in the same app, at <http://localhost:8080/ledger>, where you can open it, wipe it or close it.
+What is new: the board reads its quests from the Ledger, a separate service it calls over HTTP.
+Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
+wipe it or close it. The Ledger can be slow, empty or closed, so the board has four states:
+loading, with quests, empty, and closed. The board asks the Ledger again every two seconds while
+any window has it open.
 
-The page opens one stream to the server when it loads. Whenever the board changes, the server sends
-the whole list down it. "Ride out" and "Nail it up" are commands: they change the Ledger and answer
-only the one who clicked. The stream is what shows the change, to every window at once.
+The page, the stream and the commands work as in lesson 3.
+
+### Where the code is
+
+Lesson 4 is spread over several folders. Each box is a folder under `src/main/kotlin/forgelord/`,
+and an arrow means "uses": `quests/web` imports from `components`.
+
+```mermaid
+flowchart TD
+    subgraph app ["The app"]
+        hello["hello"]
+        notice["notice"]
+        together["together"]
+        web["quests/web"]
+        quests["quests"]
+        client["quests/client"]
+        components["components"]
+        page["page"]
+        configuration["configuration"]
+    end
+    subgraph source ["A separate service"]
+        ledger["ledger"]
+    end
+    hello --> page
+    notice --> page
+    together --> components
+    together --> page
+    web --> components
+    web --> page
+    web --> quests
+    quests <--> client
+    components --> page
+    client -. HTTP .-> ledger
+    ledger --> components
+    ledger --> page
+```
+
+Each lesson's folder uses only `page/` and `components/`, never another lesson's. `page/` uses
+none of the others, and `components/` knows nothing of quests, so both can go into
+another app as they are. Nothing in the app imports `ledger/`: the board reaches it over HTTP, the
+way it would reach a real service. It runs in the same app only so there is one thing to start.
+`quests` and `quests/client` use each other, since the service calls the client and the client
+turns the Ledger's JSON into the board's own types.
+`configuration/` sets up Streamlord, the Content-Security-Policy and the Ledger's address, and
+Spring hands them to the rest.
+
+```text
+src/
+├── main/
+│   ├── kotlin/forgelord/
+│   │   ├── hello/          Lesson 1, in one file
+│   │   ├── notice/         Lesson 2, in one file
+│   │   ├── together/       Lesson 3, in one file
+│   │   ├── quests/         the board's types, and the service that reads them
+│   │   │   ├── web/        the controller, the views and the form's rules
+│   │   │   └── client/     the Ledger over HTTP
+│   │   ├── components/     what every page can use: field, card list, toast and more
+│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
+│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address
+│   │   └── ledger/         the stand-in for a real source service
+│   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
+└── test/kotlin/forgelord/
+    └── exercises/          the exercises, switched off
+```
 
 Read it in this order:
 
 | Where | What |
 | --- | --- |
-| `quests/web/ViewController.kt` | The page, the board's stream, and the two commands |
-| `quests/web/QuestView.kt` | The page, and the board in each of its four states |
-| `quests/QuestService.kt` | The board as one `StateFlow`, read from the Ledger while anyone watches |
-| `quests/client/` | The Ledger over HTTP, and its JSON mapped to the board's own types |
+| `quests/web/ViewController.kt` | The routes: the page, the board's stream, and the two commands |
+| `quests/web/QuestView.kt` | The HTML: the page, and the board in each of its four states |
+| `quests/web/QuestFormView.kt` | The HTML of the form, with the server's verdict on each field |
 | `quests/web/QuestForm.kt` | The rules for a new quest, on the server and nowhere else |
-
-The rest of the folders are in the tree under [Architecture](#architecture).
+| `quests/QuestResult.kt` | The four states, and what became of a write |
+| `quests/QuestService.kt` | The board as a `StateFlow`, as in lesson 3, but read from the Ledger |
+| `quests/Quest.kt` | A quest as the board knows it |
+| `quests/client/` | The Ledger over HTTP, and its JSON turned into a `Quest` |
+| `ledger/` | The Ledger itself. Exercise 9 changes it, as you would ask the team that owns a real one |
 
 The exercises are in
 [`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
 
-### Exercise 4: Four states
+### Exercise 7: Four states
 
 Keep the board open in one window and `/ledger` in another. Wipe the Ledger, close it, open it.
 There is no test: you are done when you have seen the board loading, with quests, empty, and closed.
 Nail up a quest while the Ledger is closed, and see what you get.
 
-### Exercise 5: A name already on the post
+### Exercise 8: Keep the task short
 
-Nailing up a quest with the name of one already on the post, in any case, shows "A Tenth of the
-Wood is already on the post." at the name field, and nothing goes up.
+"What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
+Only `QuestForm.kt` changes.
 
 <details><summary>Solution</summary>
 
-The Ledger owns the quests, so the Ledger refuses the name, with `409 Conflict`. Checking on the
-board's side would ask the Ledger once more, and two people could still nail up the same name at
-the same moment.
+Beside the other limits:
+
+```kotlin
+private const val TEXT_MAX = 300
+```
+
+In `check`, in place of the line that checks `trimmedText`:
+
+```kotlin
+when {
+    trimmedText.isEmpty() -> add(Fault("text", "Say what has to be done."))
+    trimmedText.length > TEXT_MAX -> add(Fault("text", "No more than $TEXT_MAX characters."))
+}
+```
+
+The form already shows each `Fault` at its field, and in the summary above the form.
+
+</details>
+
+### Exercise 9: A name already on the post
+
+Nailing up a quest with the name of one already on the post shows "<the name> is already on the
+post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
+is the same name as "A Tenth of the Wood".
+
+<details><summary>Solution</summary>
+
+The Ledger owns the quests, so the Ledger refuses the name, with `409 Conflict`. If the board
+checked first, two people could still nail up the same name at the same moment, between the
+board's check and the Ledger's write.
 
 In `Ledger.kt`:
 
@@ -237,99 +490,59 @@ if (ledger.has(entry.title)) {
 }
 ```
 
-A new outcome in `WriteResult`, `TAKEN`, and in `QuestService.write`, before the catch for
-`RestClientException`:
+Add `TAKEN` to `WriteResult` in `QuestResult.kt`. In `QuestService.write`, catch the conflict
+before `RestClientException`. `Conflict` is a kind of `RestClientException`, and Kotlin uses the
+first `catch` that matches:
 
 ```kotlin
 } catch (_: HttpClientErrorException.Conflict) {
     WriteResult.TAKEN
+} catch (_: RestClientException) {
 ```
 
-And in `ViewController.nail`, a branch for it:
+Now build. The build fails in `ViewController.nail`: the `when` over the result no longer covers
+every case. Add the branch:
 
 ```kotlin
-written == WriteResult.TAKEN -> {
-    val name = (checked as CheckedQuest.Valid).quest.name
-    patchElements(html { questForm(emptySignals, listOf(Fault("name", "$name is already on the post."))) })
-}
+WriteResult.TAKEN ->
+    patchElements(fragment { questForm(emptySignals, listOf(Fault("name", "${checked.quest.name} is already on the post."))) })
 ```
 
 </details>
 
-### Exercise 6: Turn back
+### Kotlin in this lesson
 
-A "Turn back" button beside "Ride out" takes one rider off the quest, never below none. Every open
-board shows the new count.
-
-<details><summary>Solution</summary>
-
-A new command, through every layer, the same way "Ride out" goes.
-
-The Ledger, in `Ledger.kt`:
-
-```kotlin
-@Synchronized
-fun removeRider(id: String): Outcome =
-    when {
-        closed -> Outcome.CLOSED
-        entries.none { it.id == id } -> Outcome.UNKNOWN
-        else -> {
-            entries = entries.map { if (it.id == id) it.copy(riders = maxOf(0, it.riders - 1)) else it }
-            Outcome.DONE
-        }
-    }
-```
-
-and in `LedgerController.kt`, `@DeleteMapping("/ledger/quests/{id}/riders")` answering like
-`addRider`, but calling `removeRider`.
-
-The client, in `QuestClient.kt`:
-
-```kotlin
-fun turnBack(id: String) {
-    ledger.delete().uri("/ledger/quests/{id}/riders", id).retrieve().toBodilessEntity()
-}
-```
-
-The service: `fun turnBack(id: String): WriteResult = write { client.turnBack(id) }`.
-
-The controller: copy `rideOut` to `@PostMapping("/quests/{id}/turn-back")`, calling
-`quests.turnBack(id)`, with "Nobody turned back." in the toast.
-
-And the button, in `questCard` in `QuestView.kt`:
-
-```kotlin
-button {
-    lt(Lt.button(variant = ButtonVariant.GHOST))
-    type = ButtonType.button
-    dataOnClick(post("/quests/${quest.id}/turn-back"))
-    +"Turn back"
-}
-```
-
-</details>
-
-### Exercise 7: Break it on purpose
-
-In `questCard`, replace `+quest.name` with `dataText("$quest.name")`. It compiles, because Kotlin
-reads `$quest` as its own variable, and the browser never sees a signal. Run the tests:
-`AnalysisTest` fails. With the Streamlord plugin in IntelliJ IDEA or VS Code, you see it before you
-run anything.
+- `sealed interface QuestResult` in [`QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt),
+  with `data object Loading` and `data class Found`. A sealed type has a fixed set of subtypes, all
+  in the same package. A `data object` is a type with exactly one value, whose `toString` gives
+  its name.
+- `when (result) { QuestResult.Loading -> ...; is QuestResult.Found -> ... }` in `boardView`. `is`
+  checks the type, and in that branch `result` has it: `result.quests` works. Leave a state out,
+  and the build fails.
+- `enum class WriteResult { DONE, REFUSED }`. A fixed set of values.
+- `object QuestPageClasses` and `val questPageCss by lazy { ... }` in
+  [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
+  is a class with exactly one instance. `by lazy` works the value out the first time it is read.
+- `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
+- `try { ... } catch (_: RestClientException) { ... }` in `QuestService.write`. `try` gives a value,
+  as `if` does. `_` in place of a name says the exception is not used.
+- The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
+  without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
 
 ## When you build on it
 
-Day one can skip this part. It is what keeps the app in shape as it grows.
+The lessons do not need this section.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Eight tests hold the structure:
+once, for the page's CSS. Ten tests hold the structure:
 
-- `ComponentBoundaryTest`, `PageBoundaryTest`, `QuestsBoundaryTest` and `HelloBoundaryTest` check
-  what each package may depend on.
+- `ComponentBoundaryTest`, `PageBoundaryTest`, `QuestsBoundaryTest`, `HelloBoundaryTest`,
+  `NoticeBoundaryTest` and `TogetherBoundaryTest` check what each package may depend on.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
-- `ReadmeTest` checks that the diagram and the tree under Architecture name every folder.
+- `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
 

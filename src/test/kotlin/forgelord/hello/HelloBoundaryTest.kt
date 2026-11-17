@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 class HelloBoundaryTest {
     @Test
     fun `hello uses only page from the rest of the app`() {
-        val found = Sources.references(Sources.files("hello"), listOf("components", "quests", "ledger", "configuration"))
+        val found = Sources.references(Sources.files("hello"), listOf("components", "quests", "ledger", "configuration", "notice", "together"))
 
         assertTrue(found.isEmpty(), "hello/ refers to what it must not:\n" + found.joinToString("\n"))
     }

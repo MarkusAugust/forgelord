@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 class PageBoundaryTest {
     @Test
     fun `page knows nothing about the domain, the configuration or the components`() {
-        val found = Sources.references(Sources.files("page"), listOf("quests", "ledger", "configuration", "components"))
+        val found = Sources.references(Sources.files("page"), listOf("quests", "ledger", "configuration", "components", "hello", "notice", "together"))
 
         assertTrue(found.isEmpty(), "page/ refers to what it must not:\n" + found.joinToString("\n"))
     }

@@ -11,7 +11,7 @@ someone could copy.
 
 - `./gradlew test` runs every test, including the structure tests. Run it before you say you are done.
 - `./gradlew bootRun` starts the app on <http://localhost:8080>. `--args='--server.port=8091'` if 8080 is taken.
-- `/hello` is lesson 1: one field, one round trip. `/` is lesson 2, the board. `/ledger` switches the Ledger between open, empty and closed.
+- `/hello` is lesson 1: one field, one round trip. `/notice` is lesson 2: a list and a command. `/together` is lesson 3: the same list over a stream. `/` is lesson 4, the board. `/ledger` switches the Ledger between open, empty and closed.
 
 ## Where things are
 
@@ -19,8 +19,10 @@ someone could copy.
 src/main/kotlin/forgelord/
 ├── Main.kt
 ├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client
-├── page/            the page around everything, Content, html { }, stylesheets (widget/ in widget apps)
+├── page/            the page around everything, Content, fragment { }, stylesheets (widget/ in widget apps)
 ├── hello/           lesson 1, on its own: page/, LO-TEK and Streamlord, nothing else
+├── notice/          lesson 2, on its own, like hello/
+├── together/        lesson 3: page/ and components/, nothing else of the app
 ├── components/      UI components another page could use as they are
 ├── quests/          the board: QuestService, QuestResult, client/ for the Ledger, web/ for HTTP and views
 └── ledger/          a stand-in for a source service; quests/ reaches it over HTTP only

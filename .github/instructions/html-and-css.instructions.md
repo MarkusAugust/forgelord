@@ -10,7 +10,7 @@ Every page is rendered on the server. Markup is written with kotlinx.html and st
 ## Markup
 
 - Write markup with the kotlinx.html DSL. Never HTML in strings, `$$"""..."""` or `@Language("HTML")`.
-- A component is an extension on `FlowContent`. Markup passed around is `Content` (`FlowContent.() -> Unit`, in `page/Content.kt`). `html { }` renders a piece of a page for a patch.
+- A component is an extension on `FlowContent`. Markup passed around is `Content` (`FlowContent.() -> Unit`, in `page/Content.kt`). `fragment { }` renders a piece of a page for a patch.
 - Write text with `+text` and attributes with DSL properties or `attributes["..."]`. Datastar attributes always use Streamlord's functions; see `streamlord-datastar.instructions.md`. kotlinx.html escapes both, so text from the Ledger or the request needs no extra handling.
 - `unsafe { }` is forbidden. The only exception is the CSS in `page/Page.kt`, which refuses `</`. JavaScript goes in a file under `static/`, as `forgelord.js` does, never inline.
 
@@ -42,7 +42,7 @@ fun FlowContent.statusMessage(status: Status, text: String) {
 ## Component boundaries
 
 - `components/` is for UI another page could use as it is: status message, field, error summary, card list, shell, toast. It must not know about a domain or `configuration/`.
-- What is the same for every page (the page root, `Content`, `html { }`, `stylesheet()`) lives in `page/`, which knows nothing about components or domains.
+- What is the same for every page (the page root, `Content`, `fragment { }`, `stylesheet()`) lives in `page/`, which knows nothing about components or domains.
 - Domain-specific HTML, texts and URLs live in `<domain>/web/`.
 
 ## Tests

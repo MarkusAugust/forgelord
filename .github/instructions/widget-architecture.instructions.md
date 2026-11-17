@@ -11,9 +11,13 @@ Keep the structure proportional to the app; do not add packages or layers for co
 src/main/kotlin/forgelord/
 ├── Main.kt
 ├── configuration/                 shared Spring configuration, filters, and properties
-├── page/                          the page root, Content, html { }, stylesheet(); widget/ in widget apps
+├── page/                          the page root, Content, fragment { }, stylesheet(); widget/ in widget apps
 ├── hello/
 │   └── HelloController.kt         lesson 1 in one file: the page, one command, the view
+├── notice/
+│   └── NoticeController.kt        lesson 2 in one file: a list, and a command that answers with a card
+├── together/
+│   └── TogetherController.kt      lesson 3 in one file: a StateFlow, a stream, and a command that answers 204
 ├── components/                    reusable UI components, independent of any domain
 ├── quests/
 │   ├── QuestService.kt            loads the board from the Ledger and keeps it as one StateFlow
@@ -43,10 +47,11 @@ Mirror production packages under `src/test/kotlin/`. Test the client against `Mo
 
 Package boundaries are executable rules. When a package is added, moved, or its allowed dependencies change, update its boundary test. The tests read the source under `src/main/kotlin/` and fail with the file and line.
 
-- `ComponentBoundaryTest`: `components/` refers to no domain and not to `configuration/`; component CSS names no domain; every CSS file under `components/` is in `ComponentStyles.FILES`.
-- `PageBoundaryTest`: `page/` refers to no domain, not to `configuration/`, and not to `components/`.
+- `ComponentBoundaryTest`: `components/` refers to no domain or lesson and not to `configuration/`; component CSS names no domain; every CSS file under `components/` is in `ComponentStyles.FILES`.
+- `PageBoundaryTest`: `page/` refers to no domain or lesson, not to `configuration/`, and not to `components/`.
 - `QuestsBoundaryTest`: `quests/` never refers to `ledger/`.
-- `HelloBoundaryTest`: `hello/` uses `page/` and nothing else of the app, so it can be read and copied on its own.
+- `HelloBoundaryTest` and `NoticeBoundaryTest`: `hello/` and `notice/` use `page/` and nothing else of the app, so each can be read and copied on its own.
+- `TogetherBoundaryTest`: `together/` uses `page/` and `components/`, and no other lesson or domain.
 - `UnsafeTest`: `unsafe { }` appears once, in `page/Page.kt`.
 
 Run `./gradlew test` after changing these rules; a boundary violation fails the build.

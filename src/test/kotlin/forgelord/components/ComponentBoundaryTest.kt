@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class ComponentBoundaryTest {
     @Test
     fun `components know nothing about the domain or the configuration`() {
-        val found = Sources.references(Sources.files("components"), listOf("quests", "ledger", "configuration"))
+        val found = Sources.references(Sources.files("components"), listOf("quests", "ledger", "configuration", "hello", "notice", "together"))
 
         assertTrue(found.isEmpty(), "components/ refers to what it must not:\n" + found.joinToString("\n"))
     }

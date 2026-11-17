@@ -5,9 +5,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The README's Architecture section draws the folders twice, as a diagram and as a tree. A folder
- * added or removed in the code, and not in the README, fails here. The arrows are not checked: the
- * boundary tests hold those.
+ * The README's "Where the code is", in lesson 4, draws the folders twice, as a diagram and as a
+ * tree. A folder added or removed in the code, and not in the README, fails here. The arrows are
+ * not checked: the boundary tests hold those.
  */
 class ReadmeTest {
     /** The folders under `forgelord/`, two levels down, except the components inside `components/`. */
@@ -21,8 +21,8 @@ class ReadmeTest {
 
     private val architecture =
         File("README.md").readText()
-            .substringAfter("\n## Architecture\n")
-            .substringBefore("\n## ")
+            .substringAfter("\n### Where the code is\n")
+            .substringBefore("\n### ")
 
     @Test
     fun `the diagram names every folder`() {
