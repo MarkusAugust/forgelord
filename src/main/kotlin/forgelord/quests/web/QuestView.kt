@@ -85,7 +85,7 @@ fun FlowContent.boardView(result: QuestResult) {
         QuestResult.Empty -> statusMessage(Status.EMPTY, "The post is bare. Nail up the first quest.")
         QuestResult.Unavailable ->
             statusMessage(Status.ERROR, "The Ledger is closed. The board comes back by itself when it opens.")
-        is QuestResult.Found -> cardList(result.quests, id = { "quest-${it.id}" }) { questCard(it) }
+        is QuestResult.Found -> cardList(result.quests, cardId = { "quest-${it.id}" }) { questCard(it) }
     }
 }
 

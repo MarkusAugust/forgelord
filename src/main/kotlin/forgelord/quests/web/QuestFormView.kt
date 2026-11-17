@@ -32,7 +32,7 @@ fun FlowContent.questForm(
     signals: JsonValue,
     faults: List<Fault> = emptyList(),
 ) {
-    val says = { field: String -> faults.firstOrNull { it.field == field }?.says }
+    val faultFor = { field: String -> faults.firstOrNull { it.field == field }?.says }
 
     form {
         id = QUEST_FORM_ID
@@ -42,10 +42,10 @@ fun FlowContent.questForm(
 
         errorSummary("quest-errors", faults.map { FieldError(fieldId(it.field), it.says) })
 
-        textField(fieldId("name"), "Name", says("name")) { dataBind("quest.name") }
-        textField(fieldId("giver"), "Who is asking", says("giver")) { dataBind("quest.giver") }
-        textField(fieldId("text"), "What has to be done", says("text"), multiline = true) { dataBind("quest.text") }
-        textField(fieldId("reward"), "Reward", says("reward"), help = "In marks.") {
+        textField(fieldId("name"), "Name", faultFor("name")) { dataBind("quest.name") }
+        textField(fieldId("giver"), "Who is asking", faultFor("giver")) { dataBind("quest.giver") }
+        textField(fieldId("text"), "What has to be done", faultFor("text"), multiline = true) { dataBind("quest.text") }
+        textField(fieldId("reward"), "Reward", faultFor("reward"), help = "In marks.") {
             // Text, not number: the signal stays the text that was typed, and the server decides
             // whether it is a number.
             attributes["inputmode"] = "numeric"

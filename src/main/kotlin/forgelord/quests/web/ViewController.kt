@@ -1,7 +1,7 @@
 package forgelord.quests.web
 
 import forgelord.components.toast.showDangerToast
-import forgelord.page.html
+import forgelord.page.fragment
 import forgelord.quests.QuestService
 import forgelord.quests.WriteResult
 import io.github.markusaugust.streamlord.core.application.Streamlord
@@ -28,8 +28,8 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * The board's page, its stream, and the two commands.
  *
- * Commands go in, the view comes out. A command changes the Ledger and answers for the one who
- * sent it; the stream is the only thing that shows the board, to every page at once.
+ * A command changes the Ledger and answers only the one who sent it. The stream is the only thing
+ * that shows the board, to every page at once.
  */
 @RestController
 class ViewController(
@@ -55,7 +55,7 @@ class ViewController(
     ): StreamingResponseBody =
         response.datastarStream(streamlord, request = request, timeout = Duration.INFINITE) {
             sendLatest(quests.board, minInterval = 50.milliseconds, resumeFrom = request.getHeader("Last-Event-ID")) { result ->
-                listOf(PatchElements(html { boardView(result) }, selector = "#$BOARD_ID", mode = ElementPatchMode.INNER))
+                listOf(PatchElements(fragment { boardView(result) }, selector = "#$BOARD_ID", mode = ElementPatchMode.INNER))
             }
         }
 
@@ -63,7 +63,7 @@ class ViewController(
      * A new quest.
      *
      * Unlike a ride, this answers with markup: the form again, with what was wrong, or empty if
-     * the quest went up. The verdict belongs to the one who sent it, and the rules stay on the
+     * the quest went up. Only the sender needs to see what was wrong, and the rules stay on the
      * server. The quest itself reaches every page through the board's stream.
      */
     @PostMapping("/quests")
@@ -71,19 +71,21 @@ class ViewController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): StreamingResponseBody {
-        val form = request.readSignalsOr(QuestSignals(), streamlord).quest
-        val checked = form.check()
-        val written = (checked as? CheckedQuest.Valid)?.let { quests.nail(it.quest) }
+        val checked = request.readSignalsOr(QuestSignals(), streamlord).quest.check()
 
         return response.datastarStream(streamlord, request = request) {
-            when {
-                checked is CheckedQuest.Invalid ->
-                    patchElements(html { questForm(emptySignals, checked.faults) })
-                written == WriteResult.DONE -> {
-                    patchElements(html { questForm(emptySignals) })
-                    patchSignals(streamlord.codec.encode(QuestSignals()))
-                }
-                else -> executeScript(showDangerToast(TOASTS_ID, "The Ledger is closed. The quest did not go up."))
+            // The compiler makes both `when`s cover every case.
+            when (checked) {
+                is CheckedQuest.Invalid -> patchElements(fragment { questForm(emptySignals, checked.faults) })
+                is CheckedQuest.Valid ->
+                    when (quests.nail(checked.quest)) {
+                        WriteResult.DONE -> {
+                            patchElements(fragment { questForm(emptySignals) })
+                            patchSignals(streamlord.codec.encode(QuestSignals()))
+                        }
+                        WriteResult.REFUSED ->
+                            executeScript(showDangerToast(TOASTS_ID, "The Ledger is closed. The quest did not go up."))
+                    }
             }
         }
     }
@@ -99,7 +101,7 @@ class ViewController(
         response: HttpServletResponse,
     ): StreamingResponseBody? {
         // The signals are not needed, but reading them refuses any request that is not JSON.
-        // A form on another site can post text/plain here; it cannot post JSON.
+        // An HTML form on another site can send form data or plain text, never JSON.
         request.readSignals(streamlord)
 
         if (quests.rideOut(id) == WriteResult.DONE) {

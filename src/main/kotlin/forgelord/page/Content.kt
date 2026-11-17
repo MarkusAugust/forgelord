@@ -13,7 +13,7 @@ typealias Content = FlowContent.() -> Unit
  * kotlinx.html needs a tag to write into, so the content is written into a `div` and the `div`
  * is taken off again.
  */
-fun html(content: Content): String =
+fun fragment(content: Content): String =
     createHTML(prettyPrint = false)
         .div { content() }
         .removePrefix("<div>")

@@ -1,6 +1,6 @@
 package forgelord.hello
 
-import forgelord.page.html
+import forgelord.page.fragment
 import forgelord.page.page
 import io.github.markusaugust.streamlord.core.application.Streamlord
 import io.github.markusaugust.streamlord.html.dataBind
@@ -40,8 +40,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
  * 4. The server reads them into [HelloSignals], and answers with one element: the greeting.
  * 5. Datastar finds the element on the page with the same id and puts the new one in its place.
  *
- * The browser decides nothing. It sends what was typed, and shows what the server sent back.
- *
  * Everything is in this one file so it can be read from top to bottom. A bigger page splits it
  * into a controller and a view, as the board in quests/web/ does.
  */
@@ -67,7 +65,7 @@ class HelloController(
         val signals = request.readSignalsOr(HelloSignals(), streamlord)
 
         return response.datastarStream(streamlord, request = request) {
-            patchElements(html { greeting(greetingFor(signals.name.trim())) })
+            patchElements(fragment { greeting(greetingFor(signals.name.trim())) })
         }
     }
 }
@@ -98,7 +96,7 @@ private fun FlowContent.helloForm() {
     }
 }
 
-/** The one element the answer replaces. Its id is how Datastar finds it on the page. */
+/** The one element the answer replaces, in step 5. */
 private fun FlowContent.greeting(text: String) {
     p {
         id = "greeting"

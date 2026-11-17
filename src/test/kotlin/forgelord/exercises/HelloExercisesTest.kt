@@ -3,24 +3,33 @@ package forgelord.exercises
 import forgelord.datastar
 import forgelord.hello.HelloController
 import forgelord.testStreamlord
+import io.github.markusaugust.streamlord.core.domain.CspNonce
+import io.github.markusaugust.streamlord.spring.CspNonceFilter
 import org.junit.jupiter.api.Disabled
 import org.springframework.http.HttpMethod
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertFalse
 
 /**
  * The exercises for lesson 1, in hello/HelloController.kt. Remove `@Disabled` from one, run it,
  * watch it fail, and change the code until it passes. The README has the steps, and a solution.
  */
 class HelloExercisesTest {
-    private val mvc = MockMvcTester.of(HelloController(testStreamlord()))
+    private val controller = HelloController(testStreamlord())
+    private val mvc = MockMvcTester.of(controller)
 
     @Test
     @Disabled("Exercise 2: Where are you from?")
     fun `the greeting says where you are from`() {
-        assertContains(greet("""{"name":"Ada","from":"Hookford"}"""), "Hello, Ada from Hookford.")
-        assertContains(greet("""{"name":"Ada","from":""}"""), "Hello, Ada.")
+        // Only the name and the place are checked, so the greeting can be in your own words.
+        assertContains(greet("""{"name":"Ada","from":"Hookford"}"""), "Ada from Hookford")
+
+        val fromNowhere = greet("""{"name":"Ada","from":""}""")
+        assertContains(fromNowhere, "Ada")
+        assertFalse(" from " in fromNowhere, "With no place, the greeting says no \"from\"")
     }
 
     @Test
@@ -29,6 +38,14 @@ class HelloExercisesTest {
         greet("""{"name":"Ada"}""")
 
         assertContains(greet("""{"name":"Bo"}"""), "Greeting number 2.")
+    }
+
+    @Test
+    @Disabled("Exercise 4: Show the name as you type")
+    fun `the page shows the name as it is typed`() {
+        val page = controller.page(MockHttpServletRequest().apply { setAttribute(CspNonceFilter.ATTRIBUTE, CspNonce.generate()) })
+
+        assertContains(page, """data-text="${'$'}name"""")
     }
 
     /** What the server streams back when the page posts [signals] to /hello. */

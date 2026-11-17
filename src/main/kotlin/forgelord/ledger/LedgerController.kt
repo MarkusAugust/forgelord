@@ -1,11 +1,11 @@
 package forgelord.ledger
 
+import forgelord.page.fragment
 import io.github.markusaugust.streamlord.core.application.Streamlord
 import io.github.markusaugust.streamlord.core.domain.ElementPatchMode
 import io.github.markusaugust.streamlord.spring.cspNonce
 import io.github.markusaugust.streamlord.spring.datastarStream
 import io.github.markusaugust.streamlord.spring.readSignals
-import forgelord.page.html
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
@@ -67,7 +67,7 @@ class LedgerController(
         }
         val state = ledger.describe()
         return response.datastarStream(streamlord, request = request) {
-            patchElements(html { ledgerState(state) }, selector = "#$LEDGER_STATE_ID", mode = ElementPatchMode.INNER)
+            patchElements(fragment { ledgerState(state) }, selector = "#$LEDGER_STATE_ID", mode = ElementPatchMode.INNER)
         }
     }
 }

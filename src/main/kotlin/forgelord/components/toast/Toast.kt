@@ -12,10 +12,10 @@ import no.lotek.html.ltToast
  *
  * `Lt.toast()` gives it `data-ignore-morph`, so a patch from the server leaves the messages alone.
  */
-fun FlowContent.toastRegion(id: String) {
+fun FlowContent.toastRegion(regionId: String) {
     ltToast {
         lt(Lt.toast().host)
-        this.id = id
+        id = regionId
     }
 }
 

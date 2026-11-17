@@ -12,8 +12,8 @@ import no.lotek.assertLotek
  * on a whole page around the content, that every label and error text points to a field.
  */
 fun checked(content: Content): String {
-    val fragment = html(content)
-    ElementsGuard.check(fragment)
+    val markup = fragment(content)
+    ElementsGuard.check(markup)
     assertLotek(page("Test", CspNonce.generate(), "", content))
-    return fragment
+    return markup
 }

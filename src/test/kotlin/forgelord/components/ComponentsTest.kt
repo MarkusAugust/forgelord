@@ -28,7 +28,7 @@ class ComponentsTest {
 
     @Test
     fun `a card list has one card per item, with the id the caller gives`() {
-        val html = checked { cardList(listOf(Relay("r14", "Relay 14"), Relay("r15", "Relay 15")), id = { "relay-${it.code}" }) { p { +it.name } } }
+        val html = checked { cardList(listOf(Relay("r14", "Relay 14"), Relay("r15", "Relay 15")), cardId = { "relay-${it.code}" }) { p { +it.name } } }
         val cards = dom(html).select(".${CardListClasses.LIST} > li > article.lt-card")
 
         assertEquals(listOf("relay-r14", "relay-r15"), cards.map { it.id() })
