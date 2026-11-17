@@ -1,11 +1,7 @@
 package forgelord.quests
 
 import forgelord.quests.client.QuestClient
-import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,14 +25,16 @@ import kotlin.time.toKotlinDuration
  *
  * Changes made in the Ledger directly reach the board on the next ask. A Ledger that can tell
  * its readers about changes would let this wait for that instead.
+ *
+ * The asking runs in [scope], which is handed in: the app's own in production, and in a test one
+ * whose clock the test moves.
  */
 @Service
 class QuestService(
     private val client: QuestClient,
     @Value("\${forgelord.ledger.poll-interval}") private val pollInterval: Duration,
+    private val scope: CoroutineScope,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
     /** Asks the board to read the Ledger now. Several asks before it gets to them count as one. */
     private val refresh = Channel<Unit>(Channel.CONFLATED)
 
@@ -51,9 +49,6 @@ class QuestService(
     fun nail(quest: NewQuest): WriteResult = write { client.nail(quest) }
 
     fun rideOut(id: String): WriteResult = write { client.rideOut(id) }
-
-    @PreDestroy
-    fun close() = scope.cancel()
 
     /** A write, and then the board is read again, whether it went through or not. */
     private fun write(call: () -> Unit): WriteResult {

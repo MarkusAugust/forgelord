@@ -399,8 +399,8 @@ another app as they are. Nothing in the app imports `ledger/`: the board reaches
 way it would reach a real service. It runs in the same app only so there is one thing to start.
 `quests` and `quests/client` use each other, since the service calls the client and the client
 turns the Ledger's JSON into the board's own types.
-`configuration/` sets up Streamlord, the Content-Security-Policy and the Ledger's address, and
-Spring hands them to the rest.
+`configuration/` sets up Streamlord, the Content-Security-Policy, the Ledger's address and the
+scope the board asks the Ledger in, and Spring hands them to the rest.
 
 ```text
 src/

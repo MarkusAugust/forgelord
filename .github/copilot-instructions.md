@@ -18,7 +18,7 @@ someone could copy.
 ```text
 src/main/kotlin/forgelord/
 ├── Main.kt
-├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client
+├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client, the coroutine scope
 ├── page/            the page around everything, Content, fragment { }, stylesheets (widget/ in widget apps)
 ├── hello/           lesson 1, on its own: page/, LO-TEK and Streamlord, nothing else
 ├── notice/          lesson 2, on its own, like hello/

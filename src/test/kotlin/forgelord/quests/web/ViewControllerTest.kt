@@ -6,6 +6,9 @@ import forgelord.quests.QuestService
 import forgelord.testStreamlord
 import io.github.markusaugust.streamlord.spring.StreamlordExceptionHandler
 import io.github.markusaugust.streamlord.test.datastarEvents
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -21,7 +24,10 @@ import kotlin.test.Test
 /** The commands, through the controller, read back as the events Datastar would get. */
 class ViewControllerTest {
     private val ledger = LedgerStub()
-    private val service = QuestService(ledger.client, Duration.ofMinutes(1))
+
+    // No test here opens the board, so nothing ever runs in the scope.
+    private val scope = CoroutineScope(Dispatchers.Unconfined)
+    private val service = QuestService(ledger.client, Duration.ofMinutes(1), scope)
 
     private val mvc =
         MockMvcTester.of(listOf(ViewController(service, testStreamlord()))) {
@@ -29,7 +35,7 @@ class ViewControllerTest {
         }
 
     @AfterTest
-    fun close() = service.close()
+    fun close() = scope.cancel()
 
     @Test
     fun `an empty quest comes back with what is wrong, and the Ledger is not asked`() {
