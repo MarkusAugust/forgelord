@@ -3,8 +3,8 @@ package forgelord.quests.web
 import forgelord.components.errorsummary.FieldError
 import forgelord.components.errorsummary.errorSummary
 import forgelord.components.field.textField
+import forgelord.page.dataBind
 import io.github.markusaugust.streamlord.core.json.JsonValue
-import io.github.markusaugust.streamlord.html.dataBind
 import io.github.markusaugust.streamlord.html.dataOnSubmit
 import io.github.markusaugust.streamlord.html.dataSignals
 import io.github.markusaugust.streamlord.html.post
@@ -72,7 +72,7 @@ private fun FlowContent.questField(
 ) {
     textField(fieldId(field), label, faults.firstOrNull { it.field == field }?.says, help = help, multiline = multiline) {
         // The signal's path, as QuestSignals nests it: quest.name.
-        dataBind(QuestSignals::quest.name + "." + field.name)
+        dataBind(QuestSignals::quest, field)
         control()
     }
 }

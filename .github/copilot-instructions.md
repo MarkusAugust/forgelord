@@ -20,7 +20,7 @@ someone could copy.
 src/main/kotlin/forgelord/
 ├── Main.kt
 ├── configuration/   Spring configuration: the Streamlord bean, the CSP filter, the Ledger's HTTP client, the coroutine scope, reloading in development
-├── page/            the page around everything, Content, fragment { }, stylesheets (widget/ in widget apps)
+├── page/            the page around everything, Content, fragment { }, stylesheets, signals named by property (widget/ in widget apps)
 ├── hello/           lesson 1, on its own: page/, LO-TEK and Streamlord, nothing else
 ├── notice/          lesson 2, on its own, like hello/
 ├── together/        lesson 3: page/ and components/, nothing else of the app
@@ -40,7 +40,7 @@ The rules for each part are in `.github/instructions/`:
 - Markup is kotlinx.html. Never HTML in strings, and never `unsafe { }` outside `page/Page.kt`.
 - A CSS class is a constant in an `…Classes` object or comes from LO-TEK's `Lt`, never a free string.
 - Datastar attributes come from Streamlord's functions (`dataOnClick`, `dataBind`, `post(…)`), never
-  written by hand.
+  written by hand. A signal is named by its property, `dataBind(HelloSignals::name)`, never by a string.
 - The board shows four states: loading, data, empty and error. A failure is a state, not an exception.
 - A boundary is a test. When you add or move a package, update `MAY_USE` in `ArchitectureTest` and the README's diagram.
 - Write in English, in short sentences. Comments say why, not what.

@@ -16,8 +16,9 @@ system: you call `Lt.button()`, and the button gets LO-TEK's classes.
 
 The words the code and the lessons use:
 
-- **Signal.** A named value Datastar keeps on the page. `dataBind("name")` ties a field to the
-  signal `name`, and Datastar sends every signal as JSON with each request: `{"name": "Ada"}`.
+- **Signal.** A named value Datastar keeps on the page. `dataBind(HelloSignals::name)` ties a
+  field to the signal `name`, and Datastar sends every signal as JSON with each request:
+  `{"name": "Ada"}`.
 - **Patch.** HTML the server sends for one part of the page. Datastar finds the element on the page
   with the same `id` and puts the new one in its place.
 - **Morph.** How Datastar puts it in place: it changes only what differs, so a field you are typing
@@ -133,7 +134,7 @@ div {
     label { lt(from.label); +"Where are you from?" }
     input {
         lt(Lt.input(), from.control)
-        dataBind("from")
+        dataBind(HelloSignals::from)
     }
 }
 ```
@@ -188,11 +189,11 @@ In `helloForm`, after the `input`:
 ```kotlin
 p {
     lt(Lt.paragraph())
-    dataText(signal("name"))
+    dataText(signal(HelloSignals::name))
 }
 ```
 
-`signal("name")` writes `$name`, which is how Datastar refers to the signal `name`.
+`signal(HelloSignals::name)` writes `$name`, which is how Datastar refers to the signal `name`.
 
 Now break it on purpose. Write `dataText("$name")` instead. In a Kotlin string, `$name` means a
 Kotlin value called `name`, and Kotlin finds one: the `name` attribute of the `form` around the
@@ -200,8 +201,8 @@ paragraph. kotlinx.html does not let you reach it from inside `p { }`, so the bu
 message names `var name`. Add `val name = "Ada"` on the line above. Now it compiles, and the page
 gets `data-text="Ada"`: Kotlin put its own `name` in the string, and Datastar never sees a signal.
 Run the tests: `AnalysisTest` fails and names the line. With the Streamlord plugin in IntelliJ IDEA
-or VS Code, the line is marked as you type it. Take both lines out again, and put `signal("name")`
-back.
+or VS Code, the line is marked as you type it. Take both lines out again, and put
+`signal(HelloSignals::name)` back.
 
 </details>
 
@@ -231,6 +232,10 @@ All in [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt
   Content-Security-Policy.
 - `data class HelloSignals(val name: String = "")`. A data class gets `equals`, `toString` and
   `copy` made for it. `= ""` is the value used when the JSON has no `name`.
+- `dataBind(HelloSignals::name)`. `::` gives the property itself, not its value, and the function
+  takes the signal's name from it. Misspell it, and the code does not compile. `dataBind` here is
+  from [`page/Signals.kt`](src/main/kotlin/forgelord/page/Signals.kt); Streamlord's own takes the
+  name as a string, which nothing checks.
 - `if (name.isEmpty()) "Hello, stranger." else "Hello, $name."`. `if` is an expression: it gives a
   value, so it can be the whole body after `=`. `$name` in a string puts in the value of `name`.
 
@@ -445,7 +450,7 @@ src/
 │   │   │   ├── web/        the controller, the views and the form's rules
 │   │   │   └── client/     the Ledger over HTTP
 │   │   ├── components/     what every page can use: field, card list, toast and more
-│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
+│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts, signals by property
 │   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope, reloading in development
 │   │   └── ledger/         the stand-in for a real source service
 │   └── resources/static/   datastar.js, forgelord.js, which loads LO-TEK, and development-reload.js
@@ -605,7 +610,7 @@ The lessons do not need this section.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Seven tests hold the structure:
+once, for the page's CSS. Eight tests hold the structure:
 
 - `ArchitectureTest` has one table of what each folder uses of the others, and checks the code
   against it. A new folder needs a row before it can use anything.
@@ -613,6 +618,7 @@ once, for the page's CSS. Seven tests hold the structure:
   is on the page.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
+- `SignalNamesTest` checks that no signal is named by a string.
 - `NewQuestTest` checks that only the file with the form's rules opts in to making a `NewQuest`.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
 - `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
