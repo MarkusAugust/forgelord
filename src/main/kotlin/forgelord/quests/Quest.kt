@@ -10,7 +10,12 @@ data class Quest(
     val riders: Int,
 )
 
-/** A quest that has passed the rules and can go up. */
+/**
+ * A quest that has passed the rules and can go up.
+ *
+ * Nothing in the type stops anyone from making one unchecked, so `NewQuestTest` does: the app
+ * makes one in `QuestForm.check()` and nowhere else.
+ */
 data class NewQuest(
     val name: String,
     val giver: String,

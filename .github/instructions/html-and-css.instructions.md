@@ -48,4 +48,4 @@ fun FlowContent.statusMessage(status: Status, text: String) {
 ## Tests
 
 - Test components with a type unrelated to the domain, as `ComponentsTest` does with relays, and render them with `checked { }`. It runs `ElementsGuard` and `assertLotek` on a whole page, so every class, element and `data-*` value must exist, and every label and error text must point to a field.
-- Read rendered markup with Jsoup through `dom(html)` in `components/Dom.kt`.
+- Read rendered markup with Jsoup through `dom(html)` in `Dom.kt`.

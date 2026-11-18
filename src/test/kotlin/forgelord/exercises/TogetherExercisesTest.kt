@@ -1,14 +1,12 @@
 package forgelord.exercises
 
 import forgelord.datastar
+import forgelord.dom
+import forgelord.requestWithNonce
 import forgelord.testStreamlord
 import forgelord.together.TogetherController
-import io.github.markusaugust.streamlord.core.domain.CspNonce
-import io.github.markusaugust.streamlord.spring.CspNonceFilter
-import org.jsoup.Jsoup
 import org.junit.jupiter.api.Disabled
 import org.springframework.http.HttpMethod
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,7 +40,7 @@ class TogetherExercisesTest {
 
     /** The riders text on the quest's card, as a reload would show it. */
     private fun riders(): String {
-        val page = controller.page(MockHttpServletRequest().apply { setAttribute(CspNonceFilter.ATTRIBUTE, CspNonce.generate()) })
-        return Jsoup.parse(page).select("#together-$quest p").last()!!.text()
+        val page = controller.page(requestWithNonce())
+        return dom(page).select("#together-$quest p").last()!!.text()
     }
 }

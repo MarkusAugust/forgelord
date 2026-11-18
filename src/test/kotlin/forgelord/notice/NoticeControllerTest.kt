@@ -1,13 +1,11 @@
 package forgelord.notice
 
 import forgelord.datastar
+import forgelord.requestWithNonce
 import forgelord.testStreamlord
-import io.github.markusaugust.streamlord.core.domain.CspNonce
-import io.github.markusaugust.streamlord.spring.CspNonceFilter
 import io.github.markusaugust.streamlord.test.datastarEvents
 import no.lotek.assertLotek
 import org.springframework.http.HttpMethod
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -20,7 +18,7 @@ class NoticeControllerTest {
 
     @Test
     fun `the page is correct markup, with a card for each quest`() {
-        val page = controller.page(MockHttpServletRequest().apply { setAttribute(CspNonceFilter.ATTRIBUTE, CspNonce.generate()) })
+        val page = controller.page(requestWithNonce())
 
         assertLotek(page)
         for (notice in NOTICES) assertContains(page, """id="notice-${notice.id}"""")

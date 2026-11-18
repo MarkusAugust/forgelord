@@ -1,5 +1,6 @@
 package forgelord.exercises
 
+import forgelord.datastar
 import forgelord.quests.web.CheckedQuest
 import forgelord.quests.web.QuestForm
 import forgelord.quests.web.check
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.client.RestTestClient
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -42,24 +42,11 @@ class BoardExercisesTest {
     @Disabled("Exercise 9: A name already on the post")
     fun `a quest cannot take the name of one already on the post`() {
         val answer =
-            post("/quests", """{"quest":{"name":"a tenth of the wood","giver":"Ulf","text":"Five more.","reward":"30"}}""")
+            client.datastar("/quests", """{"quest":{"name":"a tenth of the wood","giver":"Ulf","text":"Five more.","reward":"30"}}""")
                 .expectStatus().isOk
                 .returnResult(String::class.java)
                 .responseBody
 
         assertContains(answer.orEmpty(), "is already on the post.")
     }
-
-    /** A post as Datastar sends one: the signals as JSON, with the Datastar header. */
-    private fun post(
-        path: String,
-        signals: String = "{}",
-    ): RestTestClient.ResponseSpec =
-        client
-            .post()
-            .uri(path)
-            .header("Datastar-Request", "true")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(signals)
-            .exchange()
 }

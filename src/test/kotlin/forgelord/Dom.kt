@@ -1,4 +1,4 @@
-package forgelord.components
+package forgelord
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
