@@ -39,7 +39,7 @@ Keep the controller and the domain's views together in `<domain>/web/`; `Control
 
 Put only UI components that another page could use without changes in `components/`. Keep generic rendering and layout there; keep domain-specific labels, URLs, and formatting in `<domain>/web/`. Infrastructure that is the same for every page, such as the page root and `Content`, belongs in `page/`.
 
-Dependencies point toward the web boundary: `<domain>/web/` may use the domain service and components; the service may use the client; `components/` may use `page/`. Neither `components/` nor `page/` may depend on a domain or on `configuration/`. `quests/` never refers to `ledger/`, and `quests/` and `quests/client/` never refer to `quests/web/`. Do not move code to `components/` merely to split up a view.
+Dependencies point toward the web boundary: `<domain>/web/` may use the domain service and components; the service may use the client; `components/` may use `page/`. Neither `components/` nor `page/` may depend on a domain or on `configuration/`. `configuration/` uses `page/` for one thing: in development it sets the script that reloads an open page. `quests/` never refers to `ledger/`, and `quests/` and `quests/client/` never refer to `quests/web/`. Do not move code to `components/` merely to split up a view.
 
 Mirror production packages under `src/test/kotlin/`. Test the client against `MockRestServiceServer` (see `LedgerStub`), the service's states, the components with data unrelated to any domain, and the controller through `MockMvcTester`, reading the answer back with `datastarEvents`. `LiveBoardTest` holds a stream open on a real server.
 

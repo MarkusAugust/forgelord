@@ -46,9 +46,18 @@ git clone https://github.com/MarkusAugust/forgelord && cd forgelord
 
 Open <http://localhost:8080/hello>. Port 8080 taken? `./gradlew bootRun --args='--server.port=8091'`.
 
-The app restarts by itself when the code is compiled again. In IntelliJ IDEA that is
-Build → Build Project (⌘F9). Reload the page to see the change. To start the app from
-IntelliJ IDEA, pick the run configuration `Forgelord`; it comes with the repository, in `.run/`.
+Change the code, compile it, and the open page shows the change: the app restarts by itself,
+and the page reloads itself when the app is back. It takes a second or two. What you had typed in
+a form is gone, and so is what the Ledger held, since both start again.
+
+- **From a terminal:** run `./gradlew -t classes` in a second terminal. It compiles every time
+  you save a file.
+- **From IntelliJ IDEA:** start the app with the run configuration `Forgelord`, which comes with
+  the repository, in `.run/`. It compiles when you leave IntelliJ IDEA for the browser.
+  Build → Build Project (⌘F9) does the same by hand.
+
+The reloading is for development only: it is there when Spring Boot DevTools is, which is never
+in the jar. See [`configuration/Development.kt`](src/main/kotlin/forgelord/configuration/Development.kt).
 
 Or, without downloading anything, open it in GitHub Codespaces. The app starts by itself, and the
 Streamlord extension is installed.
@@ -414,6 +423,7 @@ flowchart TD
     web --> quests
     quests <--> client
     components --> page
+    configuration --> page
     client -. HTTP .-> ledger
     ledger --> components
     ledger --> page
@@ -426,7 +436,8 @@ way it would reach a real service. It runs in the same app only so there is one 
 `quests` and `quests/client` use each other, since the service calls the client and the client
 turns the Ledger's JSON into the board's own types.
 `configuration/` sets up Streamlord, the Content-Security-Policy, the Ledger's address and the
-scope the board asks the Ledger in, and Spring hands them to the rest.
+scope the board asks the Ledger in, and Spring hands them to the rest. In development it also
+gives `page/` the script that reloads an open page.
 
 ```text
 src/
@@ -440,9 +451,9 @@ src/
 │   │   │   └── client/     the Ledger over HTTP
 │   │   ├── components/     what every page can use: field, card list, toast and more
 │   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts, signals by property
-│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope
+│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope, reloading in development
 │   │   └── ledger/         the stand-in for a real source service
-│   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
+│   └── resources/static/   datastar.js, forgelord.js, which loads LO-TEK, and development-reload.js
 └── test/kotlin/forgelord/
     └── exercises/          the exercises, switched off
 ```
