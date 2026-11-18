@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class PageTest {
     private val nonce = CspNonce.generate()
@@ -30,6 +31,18 @@ class PageTest {
     @Test
     fun `CSS that could end the style element is refused`() {
         assertFailsWith<IllegalArgumentException> { page("Test", nonce, "</style><script>", {}) }
+    }
+
+    @Test
+    fun `the development script is loaded when one is set, and not otherwise`() {
+        assertFalse("development" in page("Test", nonce, "", {}))
+
+        DevelopmentScript.src = "/development-reload.js"
+        try {
+            assertContains(page("Test", nonce, "", {}), """<script type="module" src="/development-reload.js"></script>""")
+        } finally {
+            DevelopmentScript.src = null
+        }
     }
 
     @Test

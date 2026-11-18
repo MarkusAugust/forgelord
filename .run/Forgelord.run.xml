@@ -4,11 +4,15 @@
     gives out the address the machine's name points to. On a VPN that address is often not the
     machine's own, and the log fills with "LocalRMIServerSocketFactory only accept connections from
     clients running on the host".
+
+    The update policy builds the project when you leave IntelliJ IDEA for the browser. The app
+    restarts with the new code, and the open page reloads itself.
   -->
   <configuration default="false" name="Forgelord" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="forgelord.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="forgelord.MainKt" />
     <option name="VM_PARAMETERS" value="-Djava.rmi.server.hostname=localhost" />
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
