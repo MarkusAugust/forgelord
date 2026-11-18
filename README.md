@@ -326,6 +326,13 @@ open window shows the new count. The test is in
 **Where:** `together/TogetherController.kt`: a new command beside [`rideOut`](src/main/kotlin/forgelord/together/TogetherController.kt#L119), and a
 button in [`cards`](src/main/kotlin/forgelord/together/TogetherController.kt#L148).
 
+<details><summary>Hint</summary>
+
+`rideOut` is the pattern. A command changes `riders` and answers 204. It sends no HTML: the
+stream does that, for every window. What differs here is the URL, and what happens to the count.
+
+</details>
+
 <details><summary>Solution</summary>
 
 A second command beside `rideOut`:
@@ -387,16 +394,18 @@ Open it in two windows, and both follow, as in lesson 3.
 
 What is new: the board reads its quests from the Ledger, a separate service it calls over HTTP.
 Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
-wipe it or close it. The Ledger can be slow, empty or closed, so the board has four states:
-loading, with quests, empty, and closed. The board asks the Ledger again every two seconds while
-any window has it open, and a Ledger that takes more than two seconds to answer counts as closed.
+wipe it or close it.
 
-The page, the stream and the commands work as in lesson 3.
+The page, the stream and the commands work as in lesson 3. But lesson 3 was one file, and the
+board is several folders. So this lesson comes in four steps. Each step names the few files it is
+about, and ends with an exercise. The exercises are in
+[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
 
 ### Where the code is
 
-Lesson 4 is spread over several folders. Each box is a folder under `src/main/kotlin/forgelord/`,
-and an arrow means "uses": `quests/web` imports from `components`.
+This is a map to look things up in. You need none of it by heart: each step says where to read.
+Each box is a folder under `src/main/kotlin/forgelord/`, and an arrow means "uses": `quests/web`
+imports from `components`.
 
 ```mermaid
 flowchart TD
@@ -458,22 +467,24 @@ src/
     └── exercises/          the exercises, switched off
 ```
 
-Read it in this order:
+### Step 1: Read from another service
+
+In lesson 3 the count lived in the controller, in a `MutableStateFlow`. Here the quests live in
+the Ledger, and the board has to ask for them. The Ledger can be slow, empty or closed, so the
+board has four states: loading, with quests, empty, and closed.
+
+Read these, in this order:
 
 | Where | What |
 | --- | --- |
-| `quests/web/ViewController.kt` | The routes: the page, the board's stream, and the two commands |
-| `quests/web/QuestView.kt` | The HTML: the page, and the board in each of its four states |
-| `quests/web/QuestFormView.kt` | The HTML of the form, with the server's verdict on each field |
-| `quests/web/QuestForm.kt` | The rules for a new quest, on the server and nowhere else |
-| `quests/QuestResult.kt` | The four states, what the Ledger answered, and what became of a write |
-| `quests/QuestService.kt` | The board as a `StateFlow`, as in lesson 3, but read from the Ledger |
-| `quests/Quest.kt` | A quest as the board knows it |
-| `quests/client/` | The Ledger over HTTP: its JSON turned into a `Quest`, its status codes into the board's words |
-| `ledger/` | The Ledger itself. Exercise 9 changes it, as you would ask the team that owns a real one |
+| [`quests/QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt) | `QuestResult`: the four states. `Reading`: what the Ledger answered |
+| `quests` in [`quests/client/QuestClient.kt`](src/main/kotlin/forgelord/quests/client/QuestClient.kt) | Asks the Ledger over HTTP, and turns its JSON into the board's own `Quest`. It never throws: a Ledger that fails is `Reading.Closed` |
+| [`quests/QuestService.kt`](src/main/kotlin/forgelord/quests/QuestService.kt) | `board` is a `StateFlow`, as `riders` was in lesson 3, but filled by asking the Ledger |
+| `boardView` in [`quests/web/QuestView.kt`](src/main/kotlin/forgelord/quests/web/QuestView.kt) | One rendering for each of the four states |
+| `board` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The stream. It is lesson 3's, with `quests.board` in place of `riders` |
 
-The exercises are in
-[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
+The board asks the Ledger again every two seconds while any window has it open, and a Ledger that
+takes more than two seconds to answer counts as closed.
 
 ### Exercise 7: Four states
 
@@ -483,7 +494,134 @@ Nail up a quest while the Ledger is closed, and see what you get.
 
 **Where:** in the browser. No file changes.
 
-### Exercise 8: Keep the task short
+### Step 2: A command that can fail
+
+In lesson 3, "Ride out" changed a map in memory. For a quest that is there, that cannot fail. Here
+it is a request to another service, which may be closed, or may no longer have the quest. Follow
+one click, from the button to the Ledger:
+
+| Where | What |
+| --- | --- |
+| `questCard` in [`quests/web/QuestView.kt`](src/main/kotlin/forgelord/quests/web/QuestView.kt) | The button. It posts to `/quests/{id}/ride` |
+| `rideOut` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The command. 204 when it went through, and a toast for the one who clicked when it did not |
+| `rideOut` in [`quests/QuestService.kt`](src/main/kotlin/forgelord/quests/QuestService.kt) | Hands the ride to the client, and reads the board again |
+| `rideOut` and `write` in [`quests/client/QuestClient.kt`](src/main/kotlin/forgelord/quests/client/QuestClient.kt) | The request to the Ledger, and its status code turned into a `WriteResult` |
+| `WriteResult` in [`quests/QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt) | What became of a write: `DONE`, `CLOSED` or `GONE` |
+
+Each one calls only the next. The button knows a URL. The controller calls the service. The
+service calls the client. Only the client knows that the Ledger speaks HTTP. What they share is
+the words in `QuestResult.kt`.
+
+A ride that failed is answered with 200, not with an error status: Datastar runs nothing from an
+error status, and the toast is a script the page has to run.
+
+### Exercise 8: Turn back, on the board
+
+Exercise 6 again, on the board: a "Turn back" button beside "Ride out" takes one rider off the
+quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do it:
+`DELETE /ledger/quests/{id}/riders` answers as a ride does, and never goes below none. The board
+does not ask for it yet. When the Ledger does not take it, the one who clicked gets the toast a
+ride gives, ending "Nobody turned back." The test is in
+[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
+
+**Where:** four files, from the client to the page. In each, the new code goes beside what "Ride
+out" has there:
+
+1. [`rideOut`](src/main/kotlin/forgelord/quests/client/QuestClient.kt#L54) in `quests/client/QuestClient.kt`
+2. [`rideOut`](src/main/kotlin/forgelord/quests/QuestService.kt#L48) in `quests/QuestService.kt`
+3. [`rideOut`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L100) in `quests/web/ViewController.kt`
+4. [`questCard`](src/main/kotlin/forgelord/quests/web/QuestView.kt#L92) in `quests/web/QuestView.kt`
+
+<details><summary>Hint</summary>
+
+In lesson 3 this was one function and one button. Here the function is in three parts. The client
+makes the request: `ledger.delete()` where a ride has `ledger.post()`. The service passes it on,
+and reads the board again. The controller turns the `WriteResult` into 204 or a toast.
+
+Build after each file. Until the controller has its command, nothing calls the new code, and that
+is fine.
+
+</details>
+
+<details><summary>Solution</summary>
+
+In `QuestClient`, beside `rideOut`. `write` already turns the Ledger's status codes into a
+`WriteResult`:
+
+```kotlin
+fun turnBack(id: String): WriteResult =
+    write {
+        ledger
+            .delete()
+            .uri("/ledger/quests/{id}/riders", id)
+            .retrieve()
+            .toBodilessEntity()
+    }
+```
+
+In `QuestService`, beside `rideOut`:
+
+```kotlin
+fun turnBack(id: String): WriteResult = client.turnBack(id).also { readAgain() }
+```
+
+In `ViewController`, after `rideOut`. It is `rideOut` again, with another URL and other words:
+
+```kotlin
+@PostMapping("/quests/{id}/turn-back")
+fun turnBack(
+    @PathVariable id: String,
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+): StreamingResponseBody? {
+    request.readSignals(streamlord)
+
+    val why =
+        when (quests.turnBack(id)) {
+            WriteResult.DONE -> {
+                response.status = HttpStatus.NO_CONTENT.value()
+                return null
+            }
+            WriteResult.GONE -> "That quest is no longer on the post."
+            WriteResult.CLOSED -> "The Ledger did not take it."
+        }
+    return response.datastarStream(streamlord, request = request) {
+        executeScript(showDangerToast(TOASTS_ID, "$why Nobody turned back."))
+    }
+}
+```
+
+And in `questCard` in `QuestView.kt`, after the "Ride out" button:
+
+```kotlin
+button {
+    lt(Lt.button(variant = ButtonVariant.GHOST))
+    type = ButtonType.button
+    dataOnClick(post("/quests/${quest.id}/turn-back"))
+    +"Turn back"
+}
+```
+
+Four files for what took one in lesson 3. What they buy: the Ledger could change its URL or its
+JSON, and only the client would change. The words on the toast could change, and only the
+controller would.
+
+</details>
+
+### Step 3: A form the server judges
+
+The browser checks nothing. The form's fields are signals, and "Nail it up" sends them all. The
+server decides what is wrong, and answers with the form again, with each fault at its field.
+Datastar morphs it in, so the fields keep what was typed.
+
+| Where | What |
+| --- | --- |
+| [`quests/web/QuestForm.kt`](src/main/kotlin/forgelord/quests/web/QuestForm.kt) | The form's signals, and `check`: the rules for a new quest, on the server and nowhere else |
+| [`quests/web/QuestFormView.kt`](src/main/kotlin/forgelord/quests/web/QuestFormView.kt) | The HTML of the form, with the server's verdict on each field |
+| `nail` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The command. Unlike a ride, it answers with HTML: the form again |
+| [`quests/Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt) | `NewQuest`: a quest that has passed the rules. Only `check` can make one |
+
+### Exercise 9: Keep the task short
 
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
 
@@ -511,7 +649,17 @@ The form already shows each `Fault` at its field, and in the summary above the f
 
 </details>
 
-### Exercise 9: A name already on the post
+### Step 4: From the Ledger to the page
+
+The last exercise changes every layer, and the Ledger too, as you would ask the team that owns a
+real one. Read the Ledger first:
+
+| Where | What |
+| --- | --- |
+| [`ledger/Ledger.kt`](src/main/kotlin/forgelord/ledger/Ledger.kt) | The entries, in memory. It can be open, wiped or closed |
+| [`ledger/LedgerController.kt`](src/main/kotlin/forgelord/ledger/LedgerController.kt) | Its JSON API under `/ledger/quests`, with a status code for each outcome, and the page at `/ledger` with the switch |
+
+### Exercise 10: A name already on the post
 
 Nailing up a quest with the name of one already on the post shows "<the name> is already on the
 post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
@@ -520,11 +668,23 @@ is the same name as "A Tenth of the Wood".
 **Where:** five files, from the Ledger to the page. Take them in this order:
 
 1. [`Ledger`](src/main/kotlin/forgelord/ledger/Ledger.kt#L34) in `ledger/Ledger.kt`
-2. [`add`](src/main/kotlin/forgelord/ledger/LedgerController.kt#L35) in `ledger/LedgerController.kt`
+2. [`add`](src/main/kotlin/forgelord/ledger/LedgerController.kt#L36) in `ledger/LedgerController.kt`
 3. [`WriteResult`](src/main/kotlin/forgelord/quests/QuestResult.kt#L35) in `quests/QuestResult.kt`
 4. [`write`](src/main/kotlin/forgelord/quests/client/QuestClient.kt#L64) in `quests/client/QuestClient.kt`
 5. [`nail`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L70) and [`rideOut`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L100)
    in `quests/web/ViewController.kt`
+
+<details><summary>Hint</summary>
+
+Who should refuse the name, the board or the Ledger? Think of two people who nail up the same
+name at the same moment.
+
+Then work from the Ledger and outwards. The Ledger needs a status code that means "taken". The
+client needs a word for that status code, in `WriteResult`. The controller needs to say it at the
+name field. Once the new word is in `WriteResult`, build: the compiler names the places that have
+to handle it.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -542,13 +702,18 @@ fun has(title: String): Boolean = !closed && entries.any { it.title.equals(title
 In `LedgerController.add`:
 
 ```kotlin
-if (ledger.has(entry.title)) {
-    ResponseEntity.status(HttpStatus.CONFLICT).build()
-} else {
-    ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
-        ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+synchronized(ledger) {
+    if (ledger.has(entry.title)) {
+        ResponseEntity.status(HttpStatus.CONFLICT).build()
+    } else {
+        ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+            ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+    }
 }
 ```
+
+`has` and `add` each lock the Ledger, but one at a time. `synchronized(ledger)` holds the same
+lock over both, so nobody adds the name between the check and the write.
 
 Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
 of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
@@ -576,6 +741,8 @@ A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least
 WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
 
+If you solved exercise 8, the build fails in `turnBack` too. It gets the same line.
+
 </details>
 
 ### Kotlin in this lesson
@@ -599,6 +766,11 @@ WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 - `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
   value. The form gets the field's id and its signal from it, so the name is written once, in the
   class, and a field that does not exist does not compile.
+- `client.rideOut(id).also { readAgain() }` in `QuestService`. `also` runs what is in the braces,
+  and then gives back the value it was called on: the `WriteResult`.
+- `StreamingResponseBody?` and `return null` in `ViewController.rideOut`. The `?` says the function
+  may return `null`, which here means "no body". A `return` inside a `when` branch leaves the whole
+  function, so after the `when`, `why` is always a text.
 - `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
   gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest

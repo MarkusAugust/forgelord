@@ -47,12 +47,21 @@ class Ledger {
     }
 
     @Synchronized
-    fun addRider(id: String): Outcome =
+    fun addRider(id: String): Outcome = changeRiders(id) { it + 1 }
+
+    /** One rider fewer, and never fewer than none. */
+    @Synchronized
+    fun removeRider(id: String): Outcome = changeRiders(id) { maxOf(0, it - 1) }
+
+    private fun changeRiders(
+        id: String,
+        change: (Int) -> Int,
+    ): Outcome =
         when {
             closed -> Outcome.CLOSED
             entries.none { it.id == id } -> Outcome.UNKNOWN
             else -> {
-                entries = entries.map { if (it.id == id) it.copy(riders = it.riders + 1) else it }
+                entries = entries.map { if (it.id == id) it.copy(riders = change(it.riders)) else it }
                 Outcome.DONE
             }
         }

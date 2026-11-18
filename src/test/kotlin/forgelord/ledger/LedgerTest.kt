@@ -41,8 +41,31 @@ class LedgerTest {
     }
 
     @Test
+    fun `a rider can leave, but riders never go below none`() {
+        ledger.addRider("rats-in-the-greywood")
+        ledger.addRider("rats-in-the-greywood")
+
+        assertEquals(Outcome.DONE, ledger.removeRider("rats-in-the-greywood"))
+        assertEquals(1, riders("rats-in-the-greywood"))
+
+        ledger.removeRider("rats-in-the-greywood")
+        assertEquals(Outcome.DONE, ledger.removeRider("rats-in-the-greywood"))
+        assertEquals(0, riders("rats-in-the-greywood"))
+    }
+
+    @Test
+    fun `a rider leaving a quest that is not there is unknown, and closed when the Ledger is`() {
+        assertEquals(Outcome.UNKNOWN, ledger.removeRider("no-such-quest"))
+
+        ledger.close()
+        assertEquals(Outcome.CLOSED, ledger.removeRider("rats-in-the-greywood"))
+    }
+
+    @Test
     fun `a rider for a quest that is not there is unknown`() {
         assertEquals(Outcome.UNKNOWN, ledger.addRider("no-such-quest"))
         assertTrue(ledger.entries().orEmpty().all { it.riders == 0 })
     }
+
+    private fun riders(id: String): Int? = ledger.entries()?.first { it.id == id }?.riders
 }
