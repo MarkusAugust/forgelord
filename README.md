@@ -71,9 +71,14 @@ until it passes.
 The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put the cursor on it
 and press Alt+Enter (⌥↩ on a Mac) to import it.
 
+Each exercise says where the change goes. The link opens the file at that line, as the file is
+before any exercise is solved. Once you have added lines above it, look for the name instead.
+
 ### Exercise 1: Change the greeting
 
 Make the page greet in your own words. There is no test: you are done when the page says it.
+
+**Where:** [`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79) in `hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
@@ -87,6 +92,9 @@ tests: `HelloControllerTest` checks the old words, so change them there too.
 Add a second field, "Where are you from?". "Ada" from "Hookford" gets "Hello, Ada from Hookford.";
 with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep yours: the test
 checks only the name and the place.
+
+**Where:** `hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/hello/HelloController.kt#L75),
+[`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
 
 <details><summary>Solution</summary>
 
@@ -108,14 +116,16 @@ fun greetingFor(name: String, from: String): String =
     }
 ```
 
-In `helloForm`, before the button:
+In `helloForm`, before the button, a `div` of its own:
 
 ```kotlin
-val from = Lt.field(id = "from")
-label { lt(from.label); +"Where are you from?" }
-input {
-    lt(Lt.input(), from.control)
-    dataBind("from")
+div {
+    val from = Lt.field(id = "from")
+    label { lt(from.label); +"Where are you from?" }
+    input {
+        lt(Lt.input(), from.control)
+        dataBind("from")
+    }
 }
 ```
 
@@ -127,6 +137,9 @@ And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
 
 Each greeting ends with its number: "Hello, Bo. Greeting number 2.". Open the page in two windows:
 they share the count.
+
+**Where:** `hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/hello/HelloController.kt#L48), and
+[`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
 
 <details><summary>Solution</summary>
 
@@ -156,6 +169,8 @@ exercise 2, call `greetingFor(signals.name.trim())` instead.
 
 Under the field, show what is in it, letter by letter as it is typed. The server is not asked:
 `dataText` tells Datastar to keep an element's text equal to a signal.
+
+**Where:** [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) in `hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
@@ -231,6 +246,8 @@ until you reload it. The answer to a click goes only to the window that clicked.
 When three or more have ridden out on a quest, its card shows a badge that says "Popular". The
 test is in [`exercises/NoticeExercisesTest.kt`](src/test/kotlin/forgelord/exercises/NoticeExercisesTest.kt).
 
+**Where:** [`noticeCard`](src/main/kotlin/forgelord/notice/NoticeController.kt#L101) in `notice/NoticeController.kt`.
+
 <details><summary>Solution</summary>
 
 In `noticeCard`, after the paragraph with the count:
@@ -291,6 +308,9 @@ What changed:
 A "Turn back" button beside "Ride out" takes one rider off the quest, never below none, and every
 open window shows the new count. The test is in
 [`exercises/TogetherExercisesTest.kt`](src/test/kotlin/forgelord/exercises/TogetherExercisesTest.kt).
+
+**Where:** `together/TogetherController.kt`: a new command beside [`rideOut`](src/main/kotlin/forgelord/together/TogetherController.kt#L119), and a
+button in [`cards`](src/main/kotlin/forgelord/together/TogetherController.kt#L148).
 
 <details><summary>Solution</summary>
 
@@ -445,10 +465,14 @@ Keep the board open in one window and `/ledger` in another. Wipe the Ledger, clo
 There is no test: you are done when you have seen the board loading, with quests, empty, and closed.
 Nail up a quest while the Ledger is closed, and see what you get.
 
+**Where:** in the browser. No file changes.
+
 ### Exercise 8: Keep the task short
 
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
-Only `QuestForm.kt` changes.
+
+**Where:** [`check`](src/main/kotlin/forgelord/quests/web/QuestForm.kt#L57) in `quests/web/QuestForm.kt`. No other file
+changes.
 
 <details><summary>Solution</summary>
 
@@ -476,6 +500,15 @@ The form already shows each `Fault` at its field, and in the summary above the f
 Nailing up a quest with the name of one already on the post shows "<the name> is already on the
 post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
 is the same name as "A Tenth of the Wood".
+
+**Where:** five files, from the Ledger to the page. Take them in this order:
+
+1. [`Ledger`](src/main/kotlin/forgelord/ledger/Ledger.kt#L34) in `ledger/Ledger.kt`
+2. [`add`](src/main/kotlin/forgelord/ledger/LedgerController.kt#L35) in `ledger/LedgerController.kt`
+3. [`WriteResult`](src/main/kotlin/forgelord/quests/QuestResult.kt#L35) in `quests/QuestResult.kt`
+4. [`write`](src/main/kotlin/forgelord/quests/client/QuestClient.kt#L64) in `quests/client/QuestClient.kt`
+5. [`nail`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L70) and [`rideOut`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L100)
+   in `quests/web/ViewController.kt`
 
 <details><summary>Solution</summary>
 

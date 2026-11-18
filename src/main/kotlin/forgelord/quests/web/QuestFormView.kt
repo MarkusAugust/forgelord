@@ -50,7 +50,7 @@ fun FlowContent.questForm(
             attributes["inputmode"] = "numeric"
         }
 
-        button(classes = QuestPageClasses.SUBMIT) {
+        button {
             lt(Lt.button())
             type = ButtonType.submit
             +"Nail it up"
