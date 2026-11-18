@@ -19,7 +19,7 @@ The browser runs Datastar; the server speaks to it through Streamlord. The serve
 ## Signals
 
 - Read and write signals with the codec, from one data class: `request.readSignalsOr(QuestSignals(), streamlord)`, `dataSignals(codec.toJsonValue(QuestSignals()), ifMissing = true)`, and `patchSignals(codec.encode(QuestSignals()))` to reset. The names are written once, in the class.
-- Bind fields with `dataBind("quest.name")`. Read a signal in an expression with `signal("quest.name")`, never `"$quest.name"`: Kotlin takes `$quest` for its own variable, and the browser never sees a signal. `AnalysisTest` and the editors catch it.
+- Bind fields with `dataBind("quest.name")`. Where a form has several fields, take the name from the property, as `questField(QuestForm::name, …)` does, so the id, the fault and the signal cannot name different fields. Read a signal in an expression with `signal("quest.name")`, never `"$quest.name"`: Kotlin takes `$quest` for its own variable, and the browser never sees a signal. `AnalysisTest` and the editors catch it.
 - Read the signals in every command, even when it needs none: reading them refuses a body that is not JSON, which is what stops a form on another site from posting to it.
 
 ## Controllers

@@ -10,6 +10,7 @@ import io.github.markusaugust.streamlord.html.dataSignals
 import io.github.markusaugust.streamlord.html.post
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
+import kotlinx.html.HTMLTag
 import kotlinx.html.button
 import kotlinx.html.form
 import kotlinx.html.id
@@ -32,8 +33,6 @@ fun FlowContent.questForm(
     signals: JsonValue,
     faults: List<Fault> = emptyList(),
 ) {
-    val faultFor = { field: String -> faults.firstOrNull { it.field == field }?.says }
-
     form {
         id = QUEST_FORM_ID
         attributes["novalidate"] = ""
@@ -42,14 +41,13 @@ fun FlowContent.questForm(
 
         errorSummary("quest-errors", faults.map { FieldError(fieldId(it.field), it.says) })
 
-        textField(fieldId("name"), "Name", faultFor("name")) { dataBind("quest.name") }
-        textField(fieldId("giver"), "Who is asking", faultFor("giver")) { dataBind("quest.giver") }
-        textField(fieldId("text"), "What has to be done", faultFor("text"), multiline = true) { dataBind("quest.text") }
-        textField(fieldId("reward"), "Reward", faultFor("reward"), help = "In marks.") {
+        questField(QuestForm::name, "Name", faults)
+        questField(QuestForm::giver, "Who is asking", faults)
+        questField(QuestForm::text, "What has to be done", faults, multiline = true)
+        questField(QuestForm::reward, "Reward", faults, help = "In marks.") {
             // Text, not number: the signal stays the text that was typed, and the server decides
             // whether it is a number.
             attributes["inputmode"] = "numeric"
-            dataBind("quest.reward")
         }
 
         button(classes = QuestPageClasses.SUBMIT) {
@@ -60,4 +58,23 @@ fun FlowContent.questForm(
     }
 }
 
-private fun fieldId(field: String) = "new-$field"
+/**
+ * One field of the form. Its id, its fault and its signal all come from the one property, so
+ * they cannot name different fields.
+ */
+private fun FlowContent.questField(
+    field: Field,
+    label: String,
+    faults: List<Fault>,
+    help: String? = null,
+    multiline: Boolean = false,
+    control: HTMLTag.() -> Unit = {},
+) {
+    textField(fieldId(field), label, faults.firstOrNull { it.field == field }?.says, help = help, multiline = multiline) {
+        // The signal's path, as QuestSignals nests it: quest.name.
+        dataBind(QuestSignals::quest.name + "." + field.name)
+        control()
+    }
+}
+
+private fun fieldId(field: Field) = "new-${field.name}"

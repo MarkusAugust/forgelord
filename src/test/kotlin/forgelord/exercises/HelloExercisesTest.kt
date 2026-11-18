@@ -2,12 +2,10 @@ package forgelord.exercises
 
 import forgelord.datastar
 import forgelord.hello.HelloController
+import forgelord.requestWithNonce
 import forgelord.testStreamlord
-import io.github.markusaugust.streamlord.core.domain.CspNonce
-import io.github.markusaugust.streamlord.spring.CspNonceFilter
 import org.junit.jupiter.api.Disabled
 import org.springframework.http.HttpMethod
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -43,7 +41,7 @@ class HelloExercisesTest {
     @Test
     @Disabled("Exercise 4: Show the name as you type")
     fun `the page shows the name as it is typed`() {
-        val page = controller.page(MockHttpServletRequest().apply { setAttribute(CspNonceFilter.ATTRIBUTE, CspNonce.generate()) })
+        val page = controller.page(requestWithNonce())
 
         assertContains(page, """data-text="${'$'}name"""")
     }

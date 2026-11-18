@@ -354,7 +354,7 @@ What is new: the board reads its quests from the Ledger, a separate service it c
 Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
 wipe it or close it. The Ledger can be slow, empty or closed, so the board has four states:
 loading, with quests, empty, and closed. The board asks the Ledger again every two seconds while
-any window has it open.
+any window has it open, and a Ledger that takes more than two seconds to answer counts as closed.
 
 The page, the stream and the commands work as in lesson 3.
 
@@ -414,7 +414,7 @@ src/
 │   │   │   └── client/     the Ledger over HTTP
 │   │   ├── components/     what every page can use: field, card list, toast and more
 │   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
-│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address
+│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope
 │   │   └── ledger/         the stand-in for a real source service
 │   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
 └── test/kotlin/forgelord/
@@ -461,8 +461,8 @@ In `check`, in place of the line that checks `trimmedText`:
 
 ```kotlin
 when {
-    trimmedText.isEmpty() -> add(Fault("text", "Say what has to be done."))
-    trimmedText.length > TEXT_MAX -> add(Fault("text", "No more than $TEXT_MAX characters."))
+    trimmedText.isEmpty() -> add(Fault(QuestForm::text, "Say what has to be done."))
+    trimmedText.length > TEXT_MAX -> add(Fault(QuestForm::text, "No more than $TEXT_MAX characters."))
 }
 ```
 
@@ -517,7 +517,7 @@ case any more. In `nail`, add the branch:
 
 ```kotlin
 WriteResult.TAKEN ->
-    patchElements(fragment { questForm(emptySignals, listOf(Fault("name", "${checked.quest.name} is already on the post."))) })
+    patchElements(fragment { questForm(emptySignals, listOf(Fault(QuestForm::name, "${checked.quest.name} is already on the post."))) })
 ```
 
 A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
@@ -542,6 +542,13 @@ WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
   [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
   is a class with exactly one instance. `by lazy` works the value out the first time it is read.
 - `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
+- `data class NewQuest private constructor(...)` in [`Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt),
+  with `@PassedTheRules fun of(...)`. Nobody outside the class can call a private constructor.
+  `@RequiresOptIn` on the annotation makes every call to `of` a compile error until the caller
+  writes `@OptIn(PassedTheRules::class)`, as `QuestForm.check` does.
+- `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
+  value. The form gets the field's id and its signal from it, so the name is written once, in the
+  class, and a field that does not exist does not compile.
 - `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
   gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
@@ -553,7 +560,7 @@ The lessons do not need this section.
 
 **Rules, and the tests that hold them.** Markup is kotlinx.html, never HTML in strings. A CSS class
 is a constant in a `…Classes` object or comes from LO-TEK, never a free string. `unsafe { }` is used
-once, for the page's CSS. Six tests hold the structure:
+once, for the page's CSS. Seven tests hold the structure:
 
 - `ArchitectureTest` has one table of what each folder uses of the others, and checks the code
   against it. A new folder needs a row before it can use anything.
@@ -561,6 +568,7 @@ once, for the page's CSS. Six tests hold the structure:
   is on the page.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
+- `NewQuestTest` checks that only the file with the form's rules opts in to making a `NewQuest`.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
 - `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
   diagram's arrows are the ones in `ArchitectureTest`.
@@ -571,13 +579,17 @@ A new page with its own CSS needs a CSS file, a `…Classes` object beside it, a
 `ClassesTest`. A new component's CSS also goes in `ComponentStyles.FILES`.
 
 **Security.** Every page is served with a strict Content-Security-Policy and a new nonce per
-request (`configuration/StreamlordConfiguration.kt`). Scripts are files, never inline. Every
-command reads the signals, even when it needs none, so a form on another site cannot post to it.
+request (`configuration/StreamlordConfiguration.kt`), and `ContentSecurityPolicyTest` checks it on
+a running server. Scripts are files, never inline. Every command reads the signals, even when it
+needs none, so a form on another site cannot post to it.
 
 **Your own source service.** To read from a real service instead of the Ledger:
 
 1. Delete `ledger/` and its tests in `src/test/kotlin/forgelord/ledger/`. Take `LedgerPageClasses`
-   out of `ClassesTest`, and the steps that close and open the Ledger out of `LiveBoardTest`.
+   out of `ClassesTest`, the `ledger` row out of `ArchitectureTest`, `/ledger` out of
+   `ContentSecurityPolicyTest`, and `ledger` out of the diagram and the tree in this README.
+   `LiveBoardTest` wipes, closes and opens the Ledger through its switch: point it at a stand-in
+   of your service, or delete it.
 2. Set `forgelord.ledger.url` in `application.properties` to the service's address.
 3. Remove `@Lazy` from `LedgerConfiguration` and `QuestClient`. It is only there because the Ledger
    runs in this app, whose port is known late.

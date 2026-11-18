@@ -1,6 +1,6 @@
 package forgelord.quests.web
 
-import forgelord.components.dom
+import forgelord.dom
 import forgelord.page.checked
 import forgelord.quests.Quest
 import forgelord.quests.QuestResult
@@ -29,6 +29,17 @@ class QuestViewTest {
         assertContains(checked { boardView(QuestResult.Empty) }, "The post is bare.")
         assertContains(checked { boardView(QuestResult.Unavailable) }, "The Ledger is closed.")
         assertEquals("One has ridden out.", dom(checked { boardView(QuestResult.Found(listOf(quest))) }).select("#quest-cut-ropes p").last()?.text())
+    }
+
+    @Test
+    fun `the form binds each field to the signal of that name, and to no other`() {
+        val bound =
+            dom(checked { questForm(signals) }).select("input, textarea").map { field ->
+                field.attributes().first { it.key.startsWith("data-bind") }.let { it.key.substringAfter("data-bind:", it.value) }
+            }
+
+        // The names as the class has them. A bind to a name the class lacks is a field the server never reads.
+        assertEquals(QuestForm::class.java.declaredFields.map { "quest.${it.name}" }, bound)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package forgelord.together
 
+import forgelord.datastar
 import io.github.markusaugust.streamlord.test.LiveDatastarStream
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
@@ -7,7 +8,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.client.RestTestClient
 import java.net.URI
 import kotlin.test.Test
@@ -32,14 +32,7 @@ class TogetherLiveTest {
                     first.awaitPatchElements(selector = "#$TOGETHER_BOARD_ID", containing = "What the River Carries")
                     second.awaitPatchElements(selector = "#$TOGETHER_BOARD_ID", containing = "What the River Carries")
 
-                    client
-                        .post()
-                        .uri("/together/what-the-river-carries/ride")
-                        .header("Datastar-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body("{}")
-                        .exchange()
-                        .expectStatus().isNoContent
+                    client.datastar("/together/what-the-river-carries/ride").expectStatus().isNoContent
 
                     first.awaitPatchElements(selector = "#$TOGETHER_BOARD_ID", containing = "One has ridden out.")
                     second.awaitPatchElements(selector = "#$TOGETHER_BOARD_ID", containing = "One has ridden out.")

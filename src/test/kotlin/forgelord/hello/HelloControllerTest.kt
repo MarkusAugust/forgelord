@@ -1,13 +1,11 @@
 package forgelord.hello
 
 import forgelord.datastar
+import forgelord.requestWithNonce
 import forgelord.testStreamlord
-import io.github.markusaugust.streamlord.core.domain.CspNonce
-import io.github.markusaugust.streamlord.spring.CspNonceFilter
 import io.github.markusaugust.streamlord.test.datastarEvents
 import no.lotek.assertLotek
 import org.springframework.http.HttpMethod
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.web.servlet.assertj.MockMvcTester
 import kotlin.test.Test
 
@@ -19,7 +17,7 @@ class HelloControllerTest {
     @Test
     fun `the page is correct markup`() {
         // The nonce CspNonceFilter would have put on the request.
-        val request = MockHttpServletRequest().apply { setAttribute(CspNonceFilter.ATTRIBUTE, CspNonce.generate()) }
+        val request = requestWithNonce()
 
         assertLotek(controller.page(request))
     }

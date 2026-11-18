@@ -2,6 +2,7 @@ package forgelord.quests.client
 
 import forgelord.quests.LedgerStub
 import forgelord.quests.NewQuest
+import forgelord.quests.PassedTheRules
 import forgelord.quests.Quest
 import forgelord.quests.Reading
 import forgelord.quests.WriteResult
@@ -17,6 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** The border: the Ledger's JSON and status codes in, the board's own types out. */
+@OptIn(PassedTheRules::class)
 class QuestClientTest {
     private val ledger = LedgerStub()
 
@@ -38,7 +40,7 @@ class QuestClientTest {
             .andExpect(content().json("""{"title":"Cut Ropes","askedBy":"Ulf","task":"Six ropes.","marks":45}"""))
             .andRespond(withStatus(HttpStatus.CREATED))
 
-        assertEquals(WriteResult.DONE, ledger.client.nail(NewQuest("Cut Ropes", "Ulf", "Six ropes.", 45)))
+        assertEquals(WriteResult.DONE, ledger.client.nail(NewQuest.of("Cut Ropes", "Ulf", "Six ropes.", 45)))
         ledger.server.verify()
     }
 

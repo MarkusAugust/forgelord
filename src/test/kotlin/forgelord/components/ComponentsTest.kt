@@ -1,5 +1,6 @@
 package forgelord.components
 
+import forgelord.dom
 import forgelord.components.cardlist.CardListClasses
 import forgelord.components.cardlist.cardList
 import forgelord.components.errorsummary.FieldError

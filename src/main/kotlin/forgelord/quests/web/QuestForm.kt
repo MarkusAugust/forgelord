@@ -1,6 +1,8 @@
 package forgelord.quests.web
 
 import forgelord.quests.NewQuest
+import forgelord.quests.PassedTheRules
+import kotlin.reflect.KProperty1
 
 /** The page's signals. The form's fields sit under `quest`, so they are `$quest.name` and so on. */
 data class QuestSignals(
@@ -15,9 +17,17 @@ data class QuestForm(
     val reward: String = "",
 )
 
-/** One field's verdict: which field, and what is wrong with it. */
+/** One of the form's fields, named by its property: `QuestForm::name`. */
+typealias Field = KProperty1<QuestForm, String>
+
+/**
+ * One field's verdict: which field, and what is wrong with it.
+ *
+ * The field is the property itself, not its name in a string, so a field that does not exist
+ * does not compile, and the names are written once, in [QuestForm].
+ */
 data class Fault(
-    val field: String,
+    val field: Field,
     val says: String,
 )
 
@@ -40,8 +50,10 @@ private const val REWARD_MAX = 1000
  *
  * The browser checks nothing. It sends what was typed, and the page shows what the server
  * decided, so there is no second copy of these rules to keep in step. The text is read once
- * here, and what passes comes out as a [NewQuest] that needs no checking again.
+ * here, and what passes comes out as a [NewQuest] that needs no checking again. This is the one
+ * place that may make one, which is what the `@OptIn` says.
  */
+@OptIn(PassedTheRules::class)
 fun QuestForm.check(): CheckedQuest {
     val trimmedName = name.trim()
     val trimmedGiver = giver.trim()
@@ -52,21 +64,21 @@ fun QuestForm.check(): CheckedQuest {
     val faults =
         buildList {
             when {
-                trimmedName.isEmpty() -> add(Fault("name", "A quest needs a name."))
-                trimmedName.length > NAME_MAX -> add(Fault("name", "No more than $NAME_MAX characters. It has to fit on the post."))
+                trimmedName.isEmpty() -> add(Fault(QuestForm::name, "A quest needs a name."))
+                trimmedName.length > NAME_MAX -> add(Fault(QuestForm::name, "No more than $NAME_MAX characters. It has to fit on the post."))
             }
-            if (trimmedGiver.isEmpty()) add(Fault("giver", "Say who is asking. Nobody rides out for a stranger."))
-            if (trimmedText.isEmpty()) add(Fault("text", "Say what has to be done."))
+            if (trimmedGiver.isEmpty()) add(Fault(QuestForm::giver, "Say who is asking. Nobody rides out for a stranger."))
+            if (trimmedText.isEmpty()) add(Fault(QuestForm::text, "Say what has to be done."))
             when {
-                trimmedReward.isEmpty() -> add(Fault("reward", "Say what it pays."))
-                marks == null -> add(Fault("reward", "A number of marks, in digits."))
-                marks < 1 -> add(Fault("reward", "Nobody rides out for nothing."))
-                marks > REWARD_MAX -> add(Fault("reward", "More than $REWARD_MAX marks? Nobody in Hookford has that."))
+                trimmedReward.isEmpty() -> add(Fault(QuestForm::reward, "Say what it pays."))
+                marks == null -> add(Fault(QuestForm::reward, "A number of marks, in digits."))
+                marks < 1 -> add(Fault(QuestForm::reward, "Nobody rides out for nothing."))
+                marks > REWARD_MAX -> add(Fault(QuestForm::reward, "More than $REWARD_MAX marks? Nobody in Hookford has that."))
             }
         }
 
     return if (faults.isEmpty() && marks != null) {
-        CheckedQuest.Valid(NewQuest(name = trimmedName, giver = trimmedGiver, text = trimmedText, reward = marks))
+        CheckedQuest.Valid(NewQuest.of(name = trimmedName, giver = trimmedGiver, text = trimmedText, reward = marks))
     } else {
         CheckedQuest.Invalid(faults)
     }

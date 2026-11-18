@@ -1,5 +1,6 @@
 package forgelord.quests.web
 
+import forgelord.datastar
 import io.github.markusaugust.streamlord.test.LiveDatastarStream
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
@@ -7,7 +8,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.client.RestTestClient
 import java.net.URI
 import kotlin.test.Test
@@ -55,18 +55,10 @@ class LiveBoardTest {
             }
         }
 
-    /** A post as Datastar sends one: the signals as JSON, so the CSRF check lets it through. */
     private fun post(
         path: String,
         signals: String = "{}",
     ) {
-        client
-            .post()
-            .uri(path)
-            .header("Datastar-Request", "true")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(signals)
-            .exchange()
-            .expectStatus().is2xxSuccessful
+        client.datastar(path, signals).expectStatus().is2xxSuccessful
     }
 }
