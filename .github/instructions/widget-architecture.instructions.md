@@ -11,7 +11,7 @@ Keep the structure proportional to the app; do not add packages or layers for co
 src/main/kotlin/forgelord/
 ├── Main.kt
 ├── configuration/                 shared Spring configuration, filters, and properties
-├── page/                          the page root, Content, fragment { }, stylesheet(); widget/ in widget apps
+├── page/                          the page root, Content, fragment { }, stylesheet(), signals by property; widget/ in widget apps
 ├── hello/
 │   └── HelloController.kt         lesson 1 in one file: the page, one command, the view
 ├── notice/

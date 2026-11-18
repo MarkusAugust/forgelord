@@ -1,9 +1,9 @@
 package forgelord.hello
 
+import forgelord.page.dataBind
 import forgelord.page.fragment
 import forgelord.page.page
 import io.github.markusaugust.streamlord.core.application.Streamlord
-import io.github.markusaugust.streamlord.html.dataBind
 import io.github.markusaugust.streamlord.html.dataOnSubmit
 import io.github.markusaugust.streamlord.html.post
 import io.github.markusaugust.streamlord.spring.cspNonce
@@ -90,7 +90,7 @@ private fun FlowContent.helloForm() {
             label { lt(field.label); +"Your name" }
             input {
                 lt(Lt.input(), field.control)
-                dataBind("name")
+                dataBind(HelloSignals::name)
             }
         }
         button {
