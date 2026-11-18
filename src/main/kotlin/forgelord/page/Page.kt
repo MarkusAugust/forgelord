@@ -26,7 +26,7 @@ private val pageCss: String by lazy { stylesheet("forgelord/page/Page.css") }
 
 /**
  * A script every page loads in development, and none otherwise. `page/` does not know what it is
- * for: `configuration/DevelopmentReload.kt` sets it when the app starts.
+ * for: `configuration/Development.kt` sets it when the app starts.
  */
 object DevelopmentScript {
     @Volatile

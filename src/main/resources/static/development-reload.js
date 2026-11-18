@@ -1,5 +1,6 @@
 // Reloads the page when the app has started again. Development only: the page loads this file
-// when configuration/DevelopmentReload.kt is there, which it never is in the jar.
+// when Spring Boot DevTools is on the classpath, which it never is in the jar. See
+// configuration/Development.kt.
 //
 // The stream says once which start of the app answered. The first answer is remembered. A
 // different one means the app has restarted with new code.
