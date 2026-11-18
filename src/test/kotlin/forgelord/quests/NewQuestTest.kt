@@ -5,21 +5,18 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * A [NewQuest] says it has passed the rules, and that is only true while the rules are the one
- * place that makes it. A second caller that builds its own would send the Ledger a quest nobody
- * has checked.
+ * The compiler makes whoever makes a [NewQuest] say `@OptIn(PassedTheRules::class)`. It does not
+ * stop a second file from saying it, so this does: the rules are in one file, and that file is
+ * the only one that opts in.
  */
 class NewQuestTest {
     @Test
-    fun `a new quest is made only where the rules are`() {
+    fun `only the file with the rules may make a new quest`() {
         val found =
-            Sources.files("").flatMap { file ->
-                file.readLines().mapIndexedNotNull { index, line ->
-                    val makes = Regex("""\bNewQuest\(""").containsMatchIn(line) && !line.contains("class NewQuest(")
-                    if (makes) "${file.relativeTo(Sources.root).invariantSeparatorsPath}:${index + 1}" else null
-                }
-            }
+            Sources.files("")
+                .filter { file -> file.readLines().any { "OptIn(PassedTheRules::class)" in it && !it.trim().startsWith("*") } }
+                .map { it.relativeTo(Sources.root).invariantSeparatorsPath }
 
-        assertEquals(listOf("quests/web/QuestForm.kt"), found.map { it.substringBefore(":") }, "NewQuest( found in:\n" + found.joinToString("\n"))
+        assertEquals(listOf("quests/web/QuestForm.kt"), found)
     }
 }

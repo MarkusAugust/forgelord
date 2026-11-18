@@ -1,10 +1,12 @@
 package forgelord.quests.web
 
 import forgelord.quests.NewQuest
+import forgelord.quests.PassedTheRules
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /** The rules are a function from what was typed to a quest or its faults, so they need no server. */
+@OptIn(PassedTheRules::class)
 class QuestFormTest {
     private val good = QuestForm(name = " Cut Ropes ", giver = "Ulf Eightrope", text = "Bring six cut ropes.", reward = "45")
 
@@ -17,7 +19,7 @@ class QuestFormTest {
 
     @Test
     fun `a whole quest comes out trimmed, with its reward as a number`() {
-        assertEquals(CheckedQuest.Valid(NewQuest("Cut Ropes", "Ulf Eightrope", "Bring six cut ropes.", 45)), good.check())
+        assertEquals(CheckedQuest.Valid(NewQuest.of("Cut Ropes", "Ulf Eightrope", "Bring six cut ropes.", 45)), good.check())
     }
 
     @Test

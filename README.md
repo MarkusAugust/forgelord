@@ -542,6 +542,10 @@ WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
   [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
   is a class with exactly one instance. `by lazy` works the value out the first time it is read.
 - `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
+- `data class NewQuest private constructor(...)` in [`Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt),
+  with `@PassedTheRules fun of(...)`. Nobody outside the class can call a private constructor.
+  `@RequiresOptIn` on the annotation makes every call to `of` a compile error until the caller
+  writes `@OptIn(PassedTheRules::class)`, as `QuestForm.check` does.
 - `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
   value. The form gets the field's id and its signal from it, so the name is written once, in the
   class, and a field that does not exist does not compile.
@@ -564,7 +568,7 @@ once, for the page's CSS. Seven tests hold the structure:
   is on the page.
 - `ClassesTest` checks that every class constant is in its CSS file, and the other way round.
 - `UnsafeTest` checks that `unsafe { }` is where it may be.
-- `NewQuestTest` checks that a `NewQuest` is made only by the form's rules.
+- `NewQuestTest` checks that only the file with the form's rules opts in to making a `NewQuest`.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
 - `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
   diagram's arrows are the ones in `ArchitectureTest`.

@@ -1,6 +1,7 @@
 package forgelord.quests.web
 
 import forgelord.quests.NewQuest
+import forgelord.quests.PassedTheRules
 import kotlin.reflect.KProperty1
 
 /** The page's signals. The form's fields sit under `quest`, so they are `$quest.name` and so on. */
@@ -49,8 +50,10 @@ private const val REWARD_MAX = 1000
  *
  * The browser checks nothing. It sends what was typed, and the page shows what the server
  * decided, so there is no second copy of these rules to keep in step. The text is read once
- * here, and what passes comes out as a [NewQuest] that needs no checking again.
+ * here, and what passes comes out as a [NewQuest] that needs no checking again. This is the one
+ * place that may make one, which is what the `@OptIn` says.
  */
+@OptIn(PassedTheRules::class)
 fun QuestForm.check(): CheckedQuest {
     val trimmedName = name.trim()
     val trimmedGiver = giver.trim()
@@ -75,7 +78,7 @@ fun QuestForm.check(): CheckedQuest {
         }
 
     return if (faults.isEmpty() && marks != null) {
-        CheckedQuest.Valid(NewQuest(name = trimmedName, giver = trimmedGiver, text = trimmedText, reward = marks))
+        CheckedQuest.Valid(NewQuest.of(name = trimmedName, giver = trimmedGiver, text = trimmedText, reward = marks))
     } else {
         CheckedQuest.Invalid(faults)
     }
