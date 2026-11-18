@@ -354,7 +354,7 @@ What is new: the board reads its quests from the Ledger, a separate service it c
 Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
 wipe it or close it. The Ledger can be slow, empty or closed, so the board has four states:
 loading, with quests, empty, and closed. The board asks the Ledger again every two seconds while
-any window has it open.
+any window has it open, and a Ledger that takes more than two seconds to answer counts as closed.
 
 The page, the stream and the commands work as in lesson 3.
 
@@ -414,7 +414,7 @@ src/
 │   │   │   └── client/     the Ledger over HTTP
 │   │   ├── components/     what every page can use: field, card list, toast and more
 │   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts
-│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address
+│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope
 │   │   └── ledger/         the stand-in for a real source service
 │   └── resources/static/   datastar.js, and forgelord.js, which loads LO-TEK
 └── test/kotlin/forgelord/
@@ -579,13 +579,17 @@ A new page with its own CSS needs a CSS file, a `…Classes` object beside it, a
 `ClassesTest`. A new component's CSS also goes in `ComponentStyles.FILES`.
 
 **Security.** Every page is served with a strict Content-Security-Policy and a new nonce per
-request (`configuration/StreamlordConfiguration.kt`). Scripts are files, never inline. Every
-command reads the signals, even when it needs none, so a form on another site cannot post to it.
+request (`configuration/StreamlordConfiguration.kt`), and `ContentSecurityPolicyTest` checks it on
+a running server. Scripts are files, never inline. Every command reads the signals, even when it
+needs none, so a form on another site cannot post to it.
 
 **Your own source service.** To read from a real service instead of the Ledger:
 
 1. Delete `ledger/` and its tests in `src/test/kotlin/forgelord/ledger/`. Take `LedgerPageClasses`
-   out of `ClassesTest`, and the steps that close and open the Ledger out of `LiveBoardTest`.
+   out of `ClassesTest`, the `ledger` row out of `ArchitectureTest`, `/ledger` out of
+   `ContentSecurityPolicyTest`, and `ledger` out of the diagram and the tree in this README.
+   `LiveBoardTest` wipes, closes and opens the Ledger through its switch: point it at a stand-in
+   of your service, or delete it.
 2. Set `forgelord.ledger.url` in `application.properties` to the service's address.
 3. Remove `@Lazy` from `LedgerConfiguration` and `QuestClient`. It is only there because the Ledger
    runs in this app, whose port is known late.
