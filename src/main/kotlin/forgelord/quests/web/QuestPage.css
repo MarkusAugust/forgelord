@@ -26,6 +26,5 @@
 
   .forgelord-quest-submit {
     justify-self: start;
-    margin-top: var(--lt-spacing-4);
   }
 }
