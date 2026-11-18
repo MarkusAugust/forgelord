@@ -29,7 +29,7 @@ import kotlin.time.toKotlinDuration
 @Service
 class QuestService(
     private val client: QuestClient,
-    @Value("\${forgelord.ledger.poll-interval}") private val pollInterval: Duration,
+    @param:Value("\${forgelord.ledger.poll-interval}") private val pollInterval: Duration,
     private val scope: CoroutineScope,
 ) {
     /** Asks the board to read the Ledger now. Several asks before it gets to them count as one. */
