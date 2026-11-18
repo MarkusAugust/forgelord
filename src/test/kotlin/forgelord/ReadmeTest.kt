@@ -1,5 +1,6 @@
 package forgelord
 
+import org.junit.jupiter.api.Assumptions.assumeFalse
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -87,6 +88,12 @@ class ReadmeTest {
 
     @Test
     fun `a link to a line points at the name it is written on`() {
+        // Solving an exercise moves the lines below it, and the README says so. The lines are
+        // checked as long as every exercise is switched off, which is how master is.
+        val exercises = File("src/test/kotlin/forgelord/exercises").walk().filter { it.isFile }.flatMap { it.readLines() }.map { it.trim() }.toList()
+        val solving = exercises.count { it.startsWith("@Test") } != exercises.count { it.startsWith("@Disabled") }
+        assumeFalse(solving, "An exercise is switched on, so the lines may have moved")
+
         // [`greet`](src/…/HelloController.kt#L61): line 61 of that file has to say greet.
         val moved =
             Regex("""\[`(\w+)`]\((src/[\w/.]+)#L(\d+)\)""").findAll(readme)
