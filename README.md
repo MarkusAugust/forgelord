@@ -46,7 +46,8 @@ git clone https://github.com/MarkusAugust/forgelord && cd forgelord
 Open <http://localhost:8080/hello>. Port 8080 taken? `./gradlew bootRun --args='--server.port=8091'`.
 
 The app restarts by itself when the code is compiled again. In IntelliJ IDEA that is
-Build → Build Project (⌘F9). Reload the page to see the change.
+Build → Build Project (⌘F9). Reload the page to see the change. To start the app from
+IntelliJ IDEA, pick the run configuration `Forgelord`; it comes with the repository, in `.run/`.
 
 Or, without downloading anything, open it in GitHub Codespaces. The app starts by itself, and the
 Streamlord extension is installed.
