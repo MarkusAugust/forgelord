@@ -461,8 +461,8 @@ In `check`, in place of the line that checks `trimmedText`:
 
 ```kotlin
 when {
-    trimmedText.isEmpty() -> add(Fault("text", "Say what has to be done."))
-    trimmedText.length > TEXT_MAX -> add(Fault("text", "No more than $TEXT_MAX characters."))
+    trimmedText.isEmpty() -> add(Fault(QuestForm::text, "Say what has to be done."))
+    trimmedText.length > TEXT_MAX -> add(Fault(QuestForm::text, "No more than $TEXT_MAX characters."))
 }
 ```
 
@@ -517,7 +517,7 @@ case any more. In `nail`, add the branch:
 
 ```kotlin
 WriteResult.TAKEN ->
-    patchElements(fragment { questForm(emptySignals, listOf(Fault("name", "${checked.quest.name} is already on the post."))) })
+    patchElements(fragment { questForm(emptySignals, listOf(Fault(QuestForm::name, "${checked.quest.name} is already on the post."))) })
 ```
 
 A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
@@ -542,6 +542,9 @@ WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
   [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
   is a class with exactly one instance. `by lazy` works the value out the first time it is read.
 - `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
+- `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
+  value. The form gets the field's id and its signal from it, so the name is written once, in the
+  class, and a field that does not exist does not compile.
 - `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
   gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest

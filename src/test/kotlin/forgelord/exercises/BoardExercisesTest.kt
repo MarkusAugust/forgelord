@@ -35,7 +35,7 @@ class BoardExercisesTest {
 
         assertIs<CheckedQuest.Valid>(quest.check())
         val tooLong = assertIs<CheckedQuest.Invalid>(quest.copy(text = "x".repeat(301)).check())
-        assertEquals(listOf("text"), tooLong.faults.map { it.field })
+        assertEquals(listOf(QuestForm::text), tooLong.faults.map { it.field })
     }
 
     @Test

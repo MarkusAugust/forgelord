@@ -12,7 +12,7 @@ class QuestFormTest {
 
     @Test
     fun `an empty form is wrong in every field`() {
-        assertEquals(listOf("name", "giver", "text", "reward"), faultsOf(QuestForm()).map { it.field })
+        assertEquals(listOf(QuestForm::name, QuestForm::giver, QuestForm::text, QuestForm::reward), faultsOf(QuestForm()).map { it.field })
     }
 
     @Test
@@ -24,11 +24,11 @@ class QuestFormTest {
     fun `the reward is a number of marks, and at least one`() {
         assertEquals("A number of marks, in digits.", faultsOf(good.copy(reward = "a lot")).single().says)
         assertEquals("Nobody rides out for nothing.", faultsOf(good.copy(reward = "0")).single().says)
-        assertEquals("reward", faultsOf(good.copy(reward = "5000")).single().field)
+        assertEquals(QuestForm::reward, faultsOf(good.copy(reward = "5000")).single().field)
     }
 
     @Test
     fun `a name has to fit on the post`() {
-        assertEquals("name", faultsOf(good.copy(name = "A".repeat(41))).single().field)
+        assertEquals(QuestForm::name, faultsOf(good.copy(name = "A".repeat(41))).single().field)
     }
 }
