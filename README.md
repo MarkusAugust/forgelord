@@ -496,9 +496,9 @@ Nail up a quest while the Ledger is closed, and see what you get.
 
 ### Step 2: A command that can fail
 
-In lesson 3, "Ride out" changed a map in memory, and that cannot fail. Here it is a request to
-another service, which may be closed, or may no longer have the quest. Follow one click, from the
-button to the Ledger:
+In lesson 3, "Ride out" changed a map in memory. For a quest that is there, that cannot fail. Here
+it is a request to another service, which may be closed, or may no longer have the quest. Follow
+one click, from the button to the Ledger:
 
 | Where | What |
 | --- | --- |
@@ -508,8 +508,9 @@ button to the Ledger:
 | `rideOut` and `write` in [`quests/client/QuestClient.kt`](src/main/kotlin/forgelord/quests/client/QuestClient.kt) | The request to the Ledger, and its status code turned into a `WriteResult` |
 | `WriteResult` in [`quests/QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt) | What became of a write: `DONE`, `CLOSED` or `GONE` |
 
-Each file knows only the next one in the table. The view knows a URL. The controller knows the
-service. The service knows the client. Only the client knows that the Ledger speaks HTTP.
+Each one calls only the next. The button knows a URL. The controller calls the service. The
+service calls the client. Only the client knows that the Ledger speaks HTTP. What they share is
+the words in `QuestResult.kt`.
 
 A ride that failed is answered with 200, not with an error status: Datastar runs nothing from an
 error status, and the toast is a script the page has to run.
@@ -517,9 +518,11 @@ error status, and the toast is a script the page has to run.
 ### Exercise 8: Turn back, on the board
 
 Exercise 6 again, on the board: a "Turn back" button beside "Ride out" takes one rider off the
-quest. The Ledger can already do it. `DELETE /ledger/quests/{id}/riders` answers as a ride does,
-and never goes below none. The board does not ask for it yet. When the Ledger does not take it,
-the one who clicked gets the toast a ride gives, ending "Nobody turned back."
+quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do it:
+`DELETE /ledger/quests/{id}/riders` answers as a ride does, and never goes below none. The board
+does not ask for it yet. When the Ledger does not take it, the one who clicked gets the toast a
+ride gives, ending "Nobody turned back." The test is in
+[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
 
 **Where:** four files, from the client to the page. In each, the new code goes beside what "Ride
 out" has there:
@@ -653,8 +656,8 @@ real one. Read the Ledger first:
 
 | Where | What |
 | --- | --- |
-| [`ledger/Ledger.kt`](src/main/kotlin/forgelord/ledger/Ledger.kt) | The entries, in memory, and the switch that opens, wipes and closes it |
-| [`ledger/LedgerController.kt`](src/main/kotlin/forgelord/ledger/LedgerController.kt) | Its JSON API under `/ledger/quests`, with a status code for each outcome |
+| [`ledger/Ledger.kt`](src/main/kotlin/forgelord/ledger/Ledger.kt) | The entries, in memory. It can be open, wiped or closed |
+| [`ledger/LedgerController.kt`](src/main/kotlin/forgelord/ledger/LedgerController.kt) | Its JSON API under `/ledger/quests`, with a status code for each outcome, and the page at `/ledger` with the switch |
 
 ### Exercise 10: A name already on the post
 
@@ -699,13 +702,18 @@ fun has(title: String): Boolean = !closed && entries.any { it.title.equals(title
 In `LedgerController.add`:
 
 ```kotlin
-if (ledger.has(entry.title)) {
-    ResponseEntity.status(HttpStatus.CONFLICT).build()
-} else {
-    ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
-        ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+synchronized(ledger) {
+    if (ledger.has(entry.title)) {
+        ResponseEntity.status(HttpStatus.CONFLICT).build()
+    } else {
+        ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+            ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+    }
 }
 ```
+
+`has` and `add` each lock the Ledger, but one at a time. `synchronized(ledger)` holds the same
+lock over both, so nobody adds the name between the check and the write.
 
 Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
 of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
@@ -758,6 +766,11 @@ If you solved exercise 8, the build fails in `turnBack` too. It gets the same li
 - `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
   value. The form gets the field's id and its signal from it, so the name is written once, in the
   class, and a field that does not exist does not compile.
+- `client.rideOut(id).also { readAgain() }` in `QuestService`. `also` runs what is in the braces,
+  and then gives back the value it was called on: the `WriteResult`.
+- `StreamingResponseBody?` and `return null` in `ViewController.rideOut`. The `?` says the function
+  may return `null`, which here means "no body". A `return` inside a `when` branch leaves the whole
+  function, so after the `when`, `why` is always a text.
 - `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
   gives a value, as `if` does. `_` in place of a name says the exception is not used.
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest

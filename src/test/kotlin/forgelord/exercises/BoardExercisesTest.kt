@@ -1,10 +1,11 @@
 package forgelord.exercises
 
 import forgelord.datastar
-import forgelord.ledger.LedgerEntry
+import forgelord.dom
 import forgelord.page.fragment
 import forgelord.quests.Quest
 import forgelord.quests.QuestResult
+import forgelord.quests.client.QuestDto
 import forgelord.quests.web.CheckedQuest
 import forgelord.quests.web.QuestForm
 import forgelord.quests.web.boardView
@@ -38,9 +39,10 @@ class BoardExercisesTest {
     fun `a rider can turn back on the board`() {
         val quest = "what-the-river-carries"
         val card = fragment { boardView(QuestResult.Found(listOf(Quest(quest, "What the River Carries", "A River-Priest", "Go north.", 10, riders = 1)))) }
-        assertContains(card, "/quests/$quest/turn-back", message = "The card has no button that posts to turn-back")
+        val button = dom(card).select("button").firstOrNull { it.text() == "Turn back" }
+        assertContains(button?.outerHtml().orEmpty(), "/quests/$quest/turn-back", message = "The card has no \"Turn back\" button that posts to turn-back")
 
-        // Other tests may have ridden out on the same quest, so the count is compared with what it was.
+        // Every test in this Spring context shares one Ledger, so the count is compared with what it was.
         val before = ridersInTheLedger(quest)
         client.datastar("/quests/$quest/ride").expectStatus().isNoContent
         client.datastar("/quests/$quest/ride").expectStatus().isNoContent
@@ -78,10 +80,10 @@ class BoardExercisesTest {
         assertContains(answer.orEmpty(), "is already on the post.")
     }
 
-    /** The count as the Ledger has it, asked directly, the way the board's client asks. */
+    /** The count as the Ledger has it, asked directly, and read as the board's client reads it. */
     private fun ridersInTheLedger(quest: String): Int =
         client.get().uri("/ledger/quests").exchange()
-            .returnResult(Array<LedgerEntry>::class.java)
+            .returnResult(Array<QuestDto>::class.java)
             .responseBody
             .orEmpty()
             .first { it.id == quest }
