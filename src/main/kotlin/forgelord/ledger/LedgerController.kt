@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -41,8 +42,16 @@ class LedgerController(
     @PostMapping("/ledger/quests/{id}/riders")
     fun addRider(
         @PathVariable id: String,
-    ): ResponseEntity<Void> =
-        when (ledger.addRider(id)) {
+    ): ResponseEntity<Void> = answerFor(ledger.addRider(id))
+
+    /** The board has no button that asks for this yet. Putting one there is an exercise in the README. */
+    @DeleteMapping("/ledger/quests/{id}/riders")
+    fun removeRider(
+        @PathVariable id: String,
+    ): ResponseEntity<Void> = answerFor(ledger.removeRider(id))
+
+    private fun answerFor(outcome: Outcome): ResponseEntity<Void> =
+        when (outcome) {
             Outcome.DONE -> ResponseEntity.noContent().build()
             Outcome.CLOSED -> ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
             Outcome.UNKNOWN -> ResponseEntity.notFound().build()
