@@ -29,7 +29,7 @@ fun FlowContent.statusMessage(status: Status, text: String) {
 - Never write a CSS class as a free string. Use LO-TEK's builders for LO-TEK, and constants in an `object` for our own CSS.
 - LO-TEK classes and attributes come from `Lt` in `no.lotek`, applied with `lt(…)` from `no.lotek.html`: `p { lt(Lt.paragraph(size = Size.SMALL)) }`. Use the builder's enum options for variants instead of `attributes[...]`. Parts the template writes itself are on the builder: `Lt.card.title`.
 - A component with its own CSS has three files side by side: `CardList.kt`, `CardList.css` and `CardListClasses.kt`. A page's own CSS follows the same pattern: `QuestPage.css` and `QuestPageClasses.kt`.
-- Combine our classes with LO-TEK by giving our class to the tag and adding LO-TEK with `lt(…)`: `button(classes = QuestPageClasses.SUBMIT) { lt(Lt.button()) }`.
+- Combine our classes with LO-TEK by giving our class to the tag and adding LO-TEK with `lt(…)`: `ul(CardListClasses.LIST) { lt(Lt.list(variant = ListVariant.PLAIN)) }`.
 - When you add or change a class constant, update the CSS. `ClassesTest` compares every `…Classes` object with its CSS file, and fails if an object is missing from its list.
 
 ## CSS

@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse
 import kotlinx.html.ButtonType
 import kotlinx.html.FlowContent
 import kotlinx.html.button
+import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.id
@@ -82,11 +83,15 @@ private fun FlowContent.helloForm() {
         // Datastar posts the signals instead of the browser posting the form.
         dataOnSubmit(post("/hello")) { prevent = true }
 
-        val field = Lt.field(id = "name")
-        label { lt(field.label); +"Your name" }
-        input {
-            lt(Lt.input(), field.control)
-            dataBind("name")
+        // A field's parts go in one div. The page puts room between a form's children, and
+        // none inside one.
+        div {
+            val field = Lt.field(id = "name")
+            label { lt(field.label); +"Your name" }
+            input {
+                lt(Lt.input(), field.control)
+                dataBind("name")
+            }
         }
         button {
             lt(Lt.button())

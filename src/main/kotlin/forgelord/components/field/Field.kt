@@ -2,6 +2,7 @@ package forgelord.components.field
 
 import kotlinx.html.FlowContent
 import kotlinx.html.HTMLTag
+import kotlinx.html.div
 import kotlinx.html.input
 import kotlinx.html.label
 import kotlinx.html.p
@@ -15,6 +16,8 @@ import no.lotek.html.lt
  *
  * The error text is always there, hidden until [error] has something to say, so a morph only
  * changes its text and the field's state.
+ *
+ * The parts are in one `div`, so a form can put room between its fields and none inside one.
  *
  * @param id The control's id. Make it from a key in the data, never a counter, so it is the same
  *   on every render.
@@ -38,14 +41,16 @@ fun FlowContent.textField(
             error = true,
             invalid = error != null,
         )
-    label { lt(field.label); +label }
-    if (multiline) {
-        textArea { lt(Lt.textarea(state = field.state), field.control); control() }
-    } else {
-        input { lt(Lt.input(state = field.state), field.control); control() }
+    div {
+        label { lt(field.label); +label }
+        if (multiline) {
+            textArea { lt(Lt.textarea(state = field.state), field.control); control() }
+        } else {
+            input { lt(Lt.input(state = field.state), field.control); control() }
+        }
+        if (help != null) {
+            p { lt(Lt.helpText(), field.help); +help }
+        }
+        p { lt(Lt.errorText(), field.error); +error.orEmpty() }
     }
-    if (help != null) {
-        p { lt(Lt.helpText(), field.help); +help }
-    }
-    p { lt(Lt.errorText(), field.error); +error.orEmpty() }
 }

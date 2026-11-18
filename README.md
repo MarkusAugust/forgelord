@@ -107,14 +107,16 @@ fun greetingFor(name: String, from: String): String =
     }
 ```
 
-In `helloForm`, before the button:
+In `helloForm`, before the button, a `div` of its own:
 
 ```kotlin
-val from = Lt.field(id = "from")
-label { lt(from.label); +"Where are you from?" }
-input {
-    lt(Lt.input(), from.control)
-    dataBind("from")
+div {
+    val from = Lt.field(id = "from")
+    label { lt(from.label); +"Where are you from?" }
+    input {
+        lt(Lt.input(), from.control)
+        dataBind("from")
+    }
 }
 ```
 

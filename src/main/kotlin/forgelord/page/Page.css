@@ -19,8 +19,15 @@
     margin: 0 auto;
   }
 
-  /* The button that sends a form stands clear of the last field. */
+  /* A form is a column with room between its fields. LO-TEK styles each part of a field and
+     leaves the room between fields to the page. */
+  form {
+    display: grid;
+    gap: var(--lt-spacing-4);
+  }
+
+  /* In a grid a button would be as wide as the form. */
   form > button {
-    margin-top: var(--lt-spacing-4);
+    justify-self: start;
   }
 }
