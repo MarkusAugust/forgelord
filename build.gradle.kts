@@ -31,6 +31,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     // Restarts the app when the code is compiled again. Never part of the jar bootJar builds.
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    // bootJar looks at developmentOnly by itself, to leave it out, and needs the version there.
+    developmentOnly(platform(SpringBootPlugin.BOM_COORDINATES))
 
     // Datastar for Spring MVC, its attributes as kotlinx.html functions, and signals read with
     // the Jackson that Boot already has.
