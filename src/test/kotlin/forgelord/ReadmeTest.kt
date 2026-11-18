@@ -8,12 +8,17 @@ import kotlin.test.assertEquals
  * The README's "Where the code is", in lesson 4, draws the folders twice, as a diagram and as a
  * tree. A folder added or removed in the code, and not in the README, fails here. So does an
  * arrow in the diagram that `ArchitectureTest.MAY_USE` does not have, or the other way round.
+ *
+ * Each exercise says where its change goes, with a link to the line. A line that has moved fails
+ * here too.
  */
 class ReadmeTest {
     private val folders = Sources.folders
 
+    private val readme = File("README.md").readText()
+
     private val architecture =
-        File("README.md").readText()
+        readme
             .substringAfter("\n### Where the code is\n")
             .substringBefore("\n### ")
 
@@ -67,5 +72,30 @@ class ReadmeTest {
                 .sorted()
 
         assertEquals(folders, named, "The tree in the README and the folders differ")
+    }
+
+    @Test
+    fun `every exercise says where its change goes`() {
+        val silent =
+            readme.split("\n### ")
+                .filter { it.startsWith("Exercise ") }
+                .filterNot { "\n**Where:** " in it }
+                .map { it.lineSequence().first() }
+
+        assertEquals(emptyList(), silent, "Exercises with no line that starts with **Where:**")
+    }
+
+    @Test
+    fun `a link to a line points at the name it is written on`() {
+        // [`greet`](src/…/HelloController.kt#L61): line 61 of that file has to say greet.
+        val moved =
+            Regex("""\[`(\w+)`]\((src/[\w/.]+)#L(\d+)\)""").findAll(readme)
+                .filterNot { link ->
+                    val (name, file, line) = link.destructured
+                    File(file).takeIf { it.isFile }?.readLines()?.getOrNull(line.toInt() - 1)?.contains(name) == true
+                }.map { it.value }
+                .toList()
+
+        assertEquals(emptyList(), moved, "Links in the README whose line does not have the name")
     }
 }
