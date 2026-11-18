@@ -77,7 +77,7 @@ before any exercise is solved. Once you have added lines above it, look for the 
 
 Make the page greet in your own words. There is no test: you are done when the page says it.
 
-**Where:** [`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L78) in `hello/HelloController.kt`.
+**Where:** [`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79) in `hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
@@ -92,8 +92,8 @@ Add a second field, "Where are you from?". "Ada" from "Hookford" gets "Hello, Ad
 with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep yours: the test
 checks only the name and the place.
 
-**Where:** `hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/hello/HelloController.kt#L74),
-[`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L78), [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L80) and [`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L61).
+**Where:** `hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/hello/HelloController.kt#L75),
+[`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
 
 <details><summary>Solution</summary>
 
@@ -137,8 +137,8 @@ And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
 Each greeting ends with its number: "Hello, Bo. Greeting number 2.". Open the page in two windows:
 they share the count.
 
-**Where:** `hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/hello/HelloController.kt#L47), and
-[`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L61).
+**Where:** `hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/hello/HelloController.kt#L48), and
+[`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
 
 <details><summary>Solution</summary>
 
@@ -169,7 +169,7 @@ exercise 2, call `greetingFor(signals.name.trim())` instead.
 Under the field, show what is in it, letter by letter as it is typed. The server is not asked:
 `dataText` tells Datastar to keep an element's text equal to a signal.
 
-**Where:** [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L80) in `hello/HelloController.kt`.
+**Where:** [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) in `hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
