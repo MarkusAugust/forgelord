@@ -25,6 +25,15 @@ const val LAYER_ORDER = "@layer lotek, forgelord-components, forgelord-page;"
 private val pageCss: String by lazy { stylesheet("forgelord/page/Page.css") }
 
 /**
+ * A script every page loads in development, and none otherwise. `page/` does not know what it is
+ * for: `configuration/DevelopmentReload.kt` sets it when the app starts.
+ */
+object DevelopmentScript {
+    @Volatile
+    var src: String? = null
+}
+
+/**
  * The page around everything: LO-TEK's stylesheet, the CSS given in [css], and the scripts.
  *
  * In this package because it is the same for every page, and knows nothing about what is on it.
@@ -64,6 +73,7 @@ fun page(
                 // in the order they stand. Both are files, not inline scripts; see forgelord.js.
                 script(type = "module", src = "/forgelord.js") {}
                 script(type = "module", src = "/datastar.js") {}
+                DevelopmentScript.src?.let { script(type = "module", src = it) {} }
             }
         }
 }

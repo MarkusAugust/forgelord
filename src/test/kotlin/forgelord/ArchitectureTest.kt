@@ -16,7 +16,8 @@ import kotlin.test.assertTrue
  * - `page` uses nothing, and `components` only `page`, so both can go into another app.
  * - Nothing uses `ledger`. The board reaches it over HTTP, as it would any other service.
  * - `quests/web` uses `quests`, never the other way round, and never `quests/client`.
- * - `configuration` uses nothing, and nothing uses it by name: Spring hands its beans out.
+ * - Nothing uses `configuration` by name: Spring hands its beans out. It uses `page` for one
+ *   thing, the script that reloads a page in development.
  */
 class ArchitectureTest {
     @Test
@@ -56,7 +57,7 @@ class ArchitectureTest {
                 "quests/client" to setOf("quests"),
                 "components" to setOf("page"),
                 "page" to emptySet(),
-                "configuration" to emptySet(),
+                "configuration" to setOf("page"),
                 "ledger" to setOf("components", "page"),
             )
     }
