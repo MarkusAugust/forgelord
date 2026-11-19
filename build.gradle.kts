@@ -76,9 +76,36 @@ sourceSets.main {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    // SolutionsTest builds the project a second time. It runs with `check`, below.
+    useJUnitPlatform { excludeTags("solutions") }
+    // Several tests read the README, the instruction files and the sources as files. Without
+    // these, a change to one of them alone would not run the tests again.
+    inputs.files("README.md", "CLAUDE.md")
+    inputs.dir(".github")
+    inputs.dir("src")
     // A failing test says why in the terminal too, not only where.
     testLogging {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
+}
+
+// Pastes the README's solutions into a copy of the project and runs the copy's tests.
+val solutions = tasks.register<Test>("solutions") {
+    description = "Checks that the README's solutions, pasted in, pass the exercises' tests."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("solutions") }
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+    // It reads the README and the sources as files, and Gradle does not know that.
+    inputs.file("README.md")
+    inputs.dir("src")
+    inputs.files("build.gradle.kts", "settings.gradle.kts")
+    shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+    dependsOn(solutions)
 }

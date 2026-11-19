@@ -13,6 +13,9 @@ import kotlin.test.assertEquals
  * Each exercise says where its change goes, with a link to the line, and an exercise with a test
  * links to the test. A line that has moved fails here too, and so does an exercise whose number or
  * title is not the one on its test.
+ *
+ * Whether the solutions work is `SolutionsTest`'s to say. Here it is only checked that every
+ * piece of solution code has the comment that lets `SolutionsTest` paste it in.
  */
 class ReadmeTest {
     private val folders = Sources.folders
@@ -103,6 +106,26 @@ class ReadmeTest {
         val strangers = Regex("""@Disabled\("([^"]+)"\)""").findAll(exerciseTests.joinToString("\n")).map { it.groupValues[1] }.filterNot { it in headings }.toList()
 
         assertEquals(emptyList(), strangers, "Tests switched off with a text that is no exercise in the README")
+    }
+
+    @Test
+    fun `every piece of solution code says where it goes`() {
+        // `SolutionsTest` pastes in only the code that has a `<!-- solution: … -->` comment above
+        // it. A block without one would be code nothing has run. Reading the steps fails on a
+        // comment that is written wrong, which would be left out the same way.
+        Solutions.steps(readme)
+        val solved = exerciseParts.flatMap { it.split("<details><summary>Solution</summary>").drop(1).map { solution -> solution.substringBefore("</details>") } }
+        val css = readme.substringAfter("\n### Try some CSS\n").substringBefore("\n## ")
+        val unplaced =
+            (solved + css).flatMap { text ->
+                val lines = text.lines()
+                // Every other ``` opens a block.
+                lines.indices.filter { lines[it].startsWith("```") }.filterIndexed { index, _ -> index % 2 == 0 }
+                    .filterNot { Solutions.COMMENT.matches(lines.getOrNull(it - 1).orEmpty()) }
+                    .map { lines[it + 1] }
+            }
+
+        assertEquals(emptyList(), unplaced, "Solution code with no <!-- solution: … --> comment on the line above. Each starts with")
     }
 
     @Test

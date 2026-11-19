@@ -210,12 +210,19 @@ The field is a new signal, so it goes in four places: the class the server reads
 the form, and `greet`, which passes the signal on. `when` with nothing after it tries each
 condition in turn.
 
+The class `HelloSignals` and the function `greetingFor` are below the class `HelloController`.
+The first takes the place of the class, and the second of the function:
+
+<!-- solution: replace lesson1hello/HelloController.kt :: data class HelloSignals( -->
 ```kotlin
 data class HelloSignals(
     val name: String = "",
     val from: String = "",
 )
+```
 
+<!-- solution: replace lesson1hello/HelloController.kt :: fun greetingFor( -->
+```kotlin
 fun greetingFor(name: String, from: String): String =
     when {
         name.isEmpty() -> "Hello, stranger."
@@ -224,8 +231,10 @@ fun greetingFor(name: String, from: String): String =
     }
 ```
 
-In `helloForm`, before the button, a `div` of its own:
+In the function `helloForm`, a `div` of its own, after the `div` with the name field and before
+the `button`:
 
+<!-- solution: before lesson1hello/HelloController.kt :: button { -->
 ```kotlin
 div {
     val from = Lt.field(id = "from")
@@ -237,7 +246,12 @@ div {
 }
 ```
 
-And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
+And in the function `greet`, the line with `patchElements` passes both on. It becomes:
+
+<!-- solution: replace-line lesson1hello/HelloController.kt :: greeting(greetingFor(signals.name.trim())) -->
+```kotlin
+patchElements(fragment { greeting(greetingFor(signals.name.trim(), signals.from.trim())) })
+```
 
 </details>
 
@@ -271,15 +285,18 @@ Take the number in `greet`, before the stream is made, and put it in the text yo
 
 <details><summary>Solution</summary>
 
-The controller is one object for the whole app, so a field on it is shared by every window.
+The controller is one object for the whole app, so a property of it is shared by every window.
+It goes in the class `HelloController`, on the line above `@GetMapping("/hello", ...)`:
 
+<!-- solution: before lesson1hello/HelloController.kt :: @GetMapping("/hello" -->
 ```kotlin
 /** How many greetings, from every window. */
 private val greetings = AtomicInteger()
 ```
 
-In `greet`:
+In the function `greet`, in place of the `return response.datastarStream(...) { ... }` that ends it:
 
+<!-- solution: replace lesson1hello/HelloController.kt :: return response.datastarStream( -->
 ```kotlin
 val number = greetings.incrementAndGet()
 
@@ -288,7 +305,12 @@ return response.datastarStream(streamlord, request = request) {
 }
 ```
 
-It needs one import, at the top of the file: `import java.util.concurrent.atomic.AtomicInteger`.
+It needs one import, with the others at the top of the file:
+
+<!-- solution: imports lesson1hello/HelloController.kt -->
+```kotlin
+import java.util.concurrent.atomic.AtomicInteger
+```
 
 `AtomicInteger`, not an `Int`, because two windows can click at the same moment. If you skipped
 exercise 2, call `greetingFor(signals.name.trim())` instead.
@@ -314,14 +336,16 @@ A `p { }` after the `input`, inside the same `div`. In its braces, `dataText(...
 expression the text follows.
 
 Name the signal the way `dataBind` does, by its property: `signal(HelloSignals::name)` writes the
-expression for you. Both `dataText` and `signal` need an import.
+expression for you. Both need an import: `dataText` from Streamlord, and `signal` from
+`forgelord.page`.
 
 </details>
 
 <details><summary>Solution</summary>
 
-In `helloForm`, after the `input`:
+In the function `helloForm`, inside the `div` with the name field, after its `input { ... }`:
 
+<!-- solution: after-enclosing lesson1hello/HelloController.kt :: dataBind(HelloSignals::name) -->
 ```kotlin
 p {
     lt(Lt.paragraph())
@@ -334,6 +358,7 @@ p {
 It needs two imports. Take `signal` from `forgelord.page`: Streamlord has one with the same name,
 which takes the name as a string.
 
+<!-- solution: imports lesson1hello/HelloController.kt -->
 ```kotlin
 import forgelord.page.signal
 import io.github.markusaugust.streamlord.html.dataText
@@ -360,6 +385,7 @@ A constant, in [`HelloPageClasses.kt`](src/main/kotlin/forgelord/lesson1hello/He
 An `object` is a class with exactly one instance, and here it only holds names. `const val` is a
 value known when the code is compiled. The object has no braces yet, so give it some:
 
+<!-- solution: replace lesson1hello/HelloPageClasses.kt :: object HelloPageClasses -->
 ```kotlin
 object HelloPageClasses {
     const val GREETING = "forgelord-hello-greeting"
@@ -368,15 +394,22 @@ object HelloPageClasses {
 
 The rule, in `HelloPage.css`, inside the braces of `@layer forgelord-page`:
 
+<!-- solution: inside lesson1hello/HelloPage.css :: @layer forgelord-page { -->
 ```css
 .forgelord-hello-greeting {
   color: var(--lt-color-accent-text);
 }
 ```
 
-And the class on the tag, in `greeting` in `HelloController.kt`: `p(HelloPageClasses.GREETING) {`
-in place of `p {`. A tag function takes the tag's class in its parentheses. Build, and the
-greeting has the colour.
+And the class on the tag. In the function `greeting` in `HelloController.kt`, the line `p {`
+becomes:
+
+<!-- solution: replace-head lesson1hello/HelloController.kt :: id = "greeting" -->
+```kotlin
+p(HelloPageClasses.GREETING) {
+```
+
+A tag function takes the tag's class in its parentheses. Build, and the greeting has the colour.
 
 The `val helloPageCss` under the object reads the CSS file, the first time it is asked for, and
 `page(...)` puts it in the page's `<style>`. You do not have to change it.
@@ -464,15 +497,23 @@ goes in with `+`.
 
 <details><summary>Solution</summary>
 
-In `noticeCard`, after the paragraph with the count:
+In the function `noticeCard`, between the paragraph that shows `ridersText(riders)` and the
+`button`:
 
+<!-- solution: after lesson2notice/NoticeController.kt :: +ridersText(riders) -->
 ```kotlin
 if (riders >= 3) {
     span { lt(Lt.badge(color = BadgeColor.SUCCESS)); +"Popular" }
 }
 ```
 
-It needs two imports: `import kotlinx.html.span` and `import no.lotek.BadgeColor`.
+It needs two imports, with the others at the top of the file:
+
+<!-- solution: imports lesson2notice/NoticeController.kt -->
+```kotlin
+import kotlinx.html.span
+import no.lotek.BadgeColor
+```
 
 Only the card changes. The count was already there: `riders` is the card's parameter.
 
@@ -559,8 +600,10 @@ stream does that, for every window. What differs here is the URL, and what happe
 
 <details><summary>Solution</summary>
 
-A second command beside `rideOut`:
+A second command in the class `TogetherController`, after the function `rideOut` and before the
+brace that closes the class:
 
+<!-- solution: after lesson3together/TogetherController.kt :: fun rideOut( -->
 ```kotlin
 @PostMapping("/together/{id}/turn-back")
 @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -575,8 +618,10 @@ fun turnBack(
 }
 ```
 
-And in `cards`, near the bottom of the file, after the "Ride out" button:
+And in the function `cards`, near the bottom of the file, after the `button { ... }` that says
+"Ride out", inside the same braces:
 
+<!-- solution: after-enclosing lesson3together/TogetherController.kt :: +"Ride out" -->
 ```kotlin
 button {
     lt(Lt.button(variant = ButtonVariant.GHOST))
@@ -822,9 +867,10 @@ is fine.
 
 <details><summary>Solution</summary>
 
-In `QuestClient`, beside `rideOut`. `write` already turns the Ledger's status codes into a
-`WriteResult`:
+In the class `QuestClient`, after the function `rideOut`. `write` already turns the Ledger's
+status codes into a `WriteResult`:
 
+<!-- solution: after lesson4quests/client/QuestClient.kt :: fun rideOut( -->
 ```kotlin
 fun turnBack(id: String): WriteResult =
     write {
@@ -836,14 +882,17 @@ fun turnBack(id: String): WriteResult =
     }
 ```
 
-In `QuestService`, beside `rideOut`:
+In the class `QuestService`, after the function `rideOut`:
 
+<!-- solution: after lesson4quests/QuestService.kt :: fun rideOut( -->
 ```kotlin
 fun turnBack(id: String): WriteResult = client.turnBack(id).also { readAgain() }
 ```
 
-In `ViewController`, after `rideOut`. It is `rideOut` again, with another URL and other words:
+In the class `ViewController`, after the function `rideOut`. It is `rideOut` again, with another
+URL and other words:
 
+<!-- solution: after lesson4quests/web/ViewController.kt :: fun rideOut( -->
 ```kotlin
 @PostMapping("/quests/{id}/turn-back")
 fun turnBack(
@@ -868,8 +917,10 @@ fun turnBack(
 }
 ```
 
-And in `questCard` in `QuestView.kt`, after the "Ride out" button:
+And in the function `questCard` in `QuestView.kt`, after the `button { ... }` that says "Ride
+out", inside the same `div`:
 
+<!-- solution: after-enclosing lesson4quests/web/QuestView.kt :: +"Ride out" -->
 ```kotlin
 button {
     lt(Lt.button(variant = ButtonVariant.GHOST))
@@ -938,14 +989,16 @@ The limits are constants above `check`. Add one for 300.
 
 <details><summary>Solution</summary>
 
-Beside the other limits:
+In `QuestForm.kt`, on the line after `private const val REWARD_MAX = 1000`:
 
+<!-- solution: after lesson4quests/web/QuestForm.kt :: private const val REWARD_MAX -->
 ```kotlin
 private const val TEXT_MAX = 300
 ```
 
-In `check`, in place of the line that checks `trimmedText`:
+In the function `check`, in place of the line that starts with `if (trimmedText.isEmpty())`:
 
+<!-- solution: replace lesson4quests/web/QuestForm.kt :: if (trimmedText.isEmpty()) -->
 ```kotlin
 when {
     trimmedText.isEmpty() -> add(Fault(QuestForm::text, "Say what has to be done."))
@@ -1006,33 +1059,51 @@ The Ledger owns the quests, so the Ledger refuses the name, with `409 Conflict`.
 checked first, two people could still nail up the same name at the same moment, between the
 board's check and the Ledger's write.
 
-In `Ledger.kt`:
+In the class `Ledger` in `Ledger.kt`, above the `@Synchronized` that stands over the function
+`add`:
 
+<!-- solution: before ledger/Ledger.kt :: fun add(entry -->
 ```kotlin
 @Synchronized
 fun has(title: String): Boolean = !closed && entries.any { it.title.equals(title, ignoreCase = true) }
 ```
 
-In `LedgerController.add`:
+In the class `LedgerController`, the whole function `add`, with the `@PostMapping` line above it,
+becomes:
 
+<!-- solution: replace ledger/LedgerController.kt :: fun add( -->
 ```kotlin
-synchronized(ledger) {
-    if (ledger.has(entry.title)) {
-        ResponseEntity.status(HttpStatus.CONFLICT).build()
-    } else {
-        ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
-            ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+@PostMapping("/ledger/quests")
+fun add(
+    @RequestBody entry: NewLedgerEntry,
+): ResponseEntity<LedgerEntry> =
+    synchronized(ledger) {
+        if (ledger.has(entry.title)) {
+            ResponseEntity.status(HttpStatus.CONFLICT).build()
+        } else {
+            ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+                ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+        }
     }
-}
 ```
 
 `has` and `add` each lock the Ledger, but one at a time. `synchronized(ledger)` holds the same
 lock over both, so nobody adds the name between the check and the write.
 
-Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
-of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
-is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
+In the enum `WriteResult` in `QuestResult.kt`, after `GONE,`:
 
+<!-- solution: after lesson4quests/QuestResult.kt :: enum class WriteResult >> GONE, -->
+```kotlin
+/** The Ledger has a quest with that name already. Nothing changed. */
+TAKEN,
+```
+
+The client is where a status code becomes one of the board's words. So in the function `write` in
+`QuestClient.kt`, catch the conflict before `Exception`. `Conflict` is a kind of `Exception`, and
+Kotlin uses the first `catch` that matches. These three lines take the place of the line
+`} catch (e: Exception) {`:
+
+<!-- solution: replace lesson4quests/client/QuestClient.kt :: fun write( >> } catch (e: Exception) { -->
 ```kotlin
 } catch (_: HttpClientErrorException.Conflict) {
     WriteResult.TAKEN
@@ -1042,15 +1113,20 @@ is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
 `QuestService` hands the result on as it is, and needs no change.
 
 Now build. The build fails twice in `ViewController`: neither `when` over the result covers every
-case any more. In `nail`, add the branch:
+case any more. In the function `nail`, in the `when (quests.nail(checked.quest))`, add a branch
+last, after the `executeScript(...)` line of the branch for `WriteResult.CLOSED, WriteResult.GONE`:
 
+<!-- solution: after lesson4quests/web/ViewController.kt :: fun nail( >> WriteResult.CLOSED, WriteResult.GONE -> -->
 ```kotlin
 WriteResult.TAKEN ->
     patchElements(fragment { questForm(emptySignals, listOf(Fault(QuestForm::name, "${checked.quest.name} is already on the post."))) })
 ```
 
-A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
+A ride is never `TAKEN`, so in the function `rideOut` it joins the branch that says the least. In
+place of the line that starts with `WriteResult.CLOSED ->`:
 
+<!-- solution: replace lesson4quests/web/ViewController.kt :: fun rideOut( >> WriteResult.CLOSED -> -->
+<!-- solution: replace lesson4quests/web/ViewController.kt :: fun turnBack( >> WriteResult.CLOSED -> -->
 ```kotlin
 WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
@@ -1142,6 +1218,7 @@ Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-a
 
 The whole page, in `src/main/kotlin/forgelord/lesson5watch/WatchController.kt`:
 
+<!-- solution: new-file lesson5watch/WatchController.kt -->
 ```kotlin
 package forgelord.lesson5watch
 
@@ -1277,19 +1354,41 @@ private fun FlowContent.watchList(names: List<String>) {
 
 In `ArchitectureTest`, a row in `MAY_USE`:
 
+<!-- solution: after src/test/kotlin/forgelord/ArchitectureTest.kt :: "lesson3together" to setOf( -->
 ```kotlin
 "lesson5watch" to setOf("page"),
 ```
 
-In this README, under "Where the code is": a box and an arrow in the diagram, and a line in the tree.
+In this README, under "Where the code is", three lines. In the diagram, the box, on the line
+after `together["lesson3together"]`:
 
+<!-- solution: after README.md :: ### Where the code is >> together["lesson3together"] -->
 ```text
         watch["lesson5watch"]
+```
+
+In the diagram, the arrow, on the line after `together --> page`:
+
+<!-- solution: after README.md :: ### Where the code is >> together --&gt; page -->
+```text
     watch --> page
+```
+
+In the tree, on the line after the one for `lesson3together/`, with the same marks in front:
+
+<!-- solution: after README.md :: ### Where the code is >> ├── lesson3together/ -->
+```text
 │   │   ├── lesson5watch/     Lesson 5: your own page
 ```
 
-And `"/watch"` in the list of paths in `ContentSecurityPolicyTest`.
+And `"/watch"` in the list of paths in
+`src/test/kotlin/forgelord/configuration/ContentSecurityPolicyTest.kt`, after `"/together"`. The
+line with the list becomes:
+
+<!-- solution: replace-line src/test/kotlin/forgelord/configuration/ContentSecurityPolicyTest.kt :: for (path in listOf( -->
+```kotlin
+for (path in listOf("/", "/hello", "/notice", "/together", "/watch", "/ledger")) {
+```
 
 The field keeps the name after you click. To empty it, the command answers with `patchSignals`
 instead of 204, as the board's form does when a quest is nailed up.
@@ -1328,6 +1427,13 @@ once, for the page's CSS. Eight tests hold the structure:
   that each link to a line still finds its name.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
+
+`SolutionsTest` holds the lessons' solutions. It copies the project, pastes in every solution from
+this README where the solution says, switches every exercise on, and runs the copy's tests. Above
+each piece of solution code is a comment, `<!-- solution: … -->`, that says where the code goes;
+`SolutionsTest.kt` explains them. It builds the project a second time, so it is not part of
+`./gradlew test`. Run `./gradlew check`, which runs both, when you change a solution or the code a
+solution goes into.
 
 A new page follows the recipe in [lesson 5](#the-recipe). A new component's CSS needs a
 `…Classes` object and a line in `ClassesTest`, and it also goes in `ComponentStyles.FILES`.
