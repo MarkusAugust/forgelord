@@ -155,8 +155,9 @@ Each exercise says what is new in it, in a line that starts with **New here:**. 
 open the hint, which points the way without giving the code. The solution is folded below it. An
 exercise that says it has no test tells you what to look for in the browser instead.
 
-The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put the cursor on it
-and press Alt+Enter (⌥↩ on a Mac) to import it.
+A solution says which imports its code needs, when it needs any that the file does not have. In
+IntelliJ IDEA you can also put the cursor on a name that has turned red and press Alt+Enter (⌥↩ on
+a Mac).
 
 The links open a file at a line, as the file is before any exercise is solved. Once you have added
 or deleted lines above it, look for the name instead.
@@ -287,6 +288,8 @@ return response.datastarStream(streamlord, request = request) {
 }
 ```
 
+It needs one import, at the top of the file: `import java.util.concurrent.atomic.AtomicInteger`.
+
 `AtomicInteger`, not an `Int`, because two windows can click at the same moment. If you skipped
 exercise 2, call `greetingFor(signals.name.trim())` instead.
 
@@ -327,6 +330,14 @@ p {
 ```
 
 `signal(HelloSignals::name)` writes `$name`, which is how Datastar refers to the signal `name`.
+
+It needs two imports. Take `signal` from `forgelord.page`: Streamlord has one with the same name,
+which takes the name as a string.
+
+```kotlin
+import forgelord.page.signal
+import io.github.markusaugust.streamlord.html.dataText
+```
 
 Now break it on purpose. Write `dataText("$name")` instead. In a Kotlin string, `$name` means a
 Kotlin value called `name`, and Kotlin finds one: the `name` attribute of the `form` around the
@@ -460,6 +471,8 @@ if (riders >= 3) {
     span { lt(Lt.badge(color = BadgeColor.SUCCESS)); +"Popular" }
 }
 ```
+
+It needs two imports: `import kotlinx.html.span` and `import no.lotek.BadgeColor`.
 
 Only the card changes. The count was already there: `riders` is the card's parameter.
 
