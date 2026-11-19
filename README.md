@@ -1,10 +1,19 @@
 # Forgelord
 
 A starter for web apps in Kotlin and Spring MVC, with [Streamlord](https://streamlord.sobernetics.no)
-and [LO-TEK](https://lo-tek.sobernetics.no). Four lessons, each a step from the one before: a page
-that says hello, a list with a button, the same list kept up to date in every open window, and a
+and [LO-TEK](https://lo-tek.sobernetics.no). Five lessons, each a step from the one before: a page
+that says hello, a list with a button, the same list kept up to date in every open window, a
 quest board from [Gallowmark](https://github.com/MarkusAugust/gallowmark) that reads its quests
-from another service. Nothing here needs Node or npm.
+from another service, and a page you build yourself. Nothing here needs Node or npm.
+
+- [How the pages work](#how-the-pages-work), and how to [run it](#run-it)
+- [Lesson 1: Hello](#lesson-1-hello)
+- [Lesson 2: A list and a command](#lesson-2-a-list-and-a-command)
+- [Lesson 3: Every window sees it](#lesson-3-every-window-sees-it)
+- [Lesson 4: The board](#lesson-4-the-board)
+- [Lesson 5: Your own page](#lesson-5-your-own-page)
+- [When you build on it](#when-you-build-on-it)
+- [For coding agents](#for-coding-agents)
 
 ## How the pages work
 
@@ -776,6 +785,248 @@ If you solved exercise 8, the build fails in `turnBack` too. It gets the same li
 - The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
   without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
 
+## Lesson 5: Your own page
+
+The four lessons gave you every part. Here you put them together, with no code to start from: a
+page of your own, where the people of Hookford put their name down for the night watch. It has one
+field, one button, and a list that every open window sees.
+
+### The recipe
+
+Every page in this app is made the same way. Lesson 3's file has most of it in one place, so keep
+[`together/TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt) open.
+
+1. **A folder.** `src/main/kotlin/forgelord/<name>/`, with one file for the controller. One file is
+   enough until the page reads from another service. Then split it the way `quests/` is split.
+2. **A row and a box.** A new folder can use nothing until `MAY_USE` in `ArchitectureTest` has a
+   row for it. The diagram and the tree in lesson 4 get the folder too, and the diagram gets the
+   row's arrows. `./gradlew test` says what is missing.
+3. **The page.** A `@RestController` that takes `Streamlord` in its constructor, with a
+   `@GetMapping` that returns `page(title, request.cspNonce, css) { ... }`, as
+   [`page`](src/main/kotlin/forgelord/together/TogetherController.kt#L77) does.
+4. **The state.** What the page shows, in one `MutableStateFlow`.
+5. **The stream.** On the page, an element with an id and `dataInit(get(...))`. On the server, an
+   endpoint that sends the state with `sendLatest`, `INNER` into that element, as
+   [`board`](src/main/kotlin/forgelord/together/TogetherController.kt#L107) does.
+6. **A command.** A `@PostMapping` that reads the signals, changes the state and answers 204, as
+   [`rideOut`](src/main/kotlin/forgelord/together/TogetherController.kt#L119) does. When it needs
+   what the user typed, the signals get a data class, and the field gets `dataBind`, as in lesson 1.
+7. **The tests.** A test class in the same folder under `src/test/kotlin/forgelord/`, like
+   [`TogetherControllerTest`](src/test/kotlin/forgelord/together/TogetherControllerTest.kt). The
+   page's path also goes in the list in `ContentSecurityPolicyTest`. No test asks for that line: it
+   is what puts your page under the test.
+8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it, and a line in
+   `ClassesTest`, as `quests/web/` has.
+
+### Exercise 11: The watch
+
+The test is in
+[`exercises/WatchExercisesTest.kt`](src/test/kotlin/forgelord/exercises/WatchExercisesTest.kt).
+It knows your page only by its URLs, and asks a running server for them:
+
+- `GET /watch` is the page. It has an element with the id `watch-list`, and that element opens the
+  stream.
+- `GET /watch/list` is the stream. It puts the names inside `#watch-list`.
+- `POST /watch` is the command. It reads the signal `name`, puts the name on the watch, and
+  answers 204.
+
+The names live in the controller, as the count does in lesson 3. Remove `@Disabled`, run the test,
+and build the page until it passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment
+the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
+of your own, point 7.
+
+**Where:** a new folder, `src/main/kotlin/forgelord/watch/`. A row in
+[`MAY_USE`](src/test/kotlin/forgelord/ArchitectureTest.kt#L50). A box, an arrow and a line in
+[Where the code is](#where-the-code-is).
+
+<details><summary>Checklist</summary>
+
+- [ ] `watch/WatchController.kt` has a `@RestController` that takes `Streamlord`.
+- [ ] `MAY_USE` has the row `"watch" to setOf("page")`.
+- [ ] The diagram has the box `watch["watch"]` and the arrow `watch --> page`. The tree has a line
+      for `watch/`.
+- [ ] If you use a component: `"components"` in the row, and the arrow `watch --> components`.
+- [ ] The names are in a `MutableStateFlow(emptyList<String>())`.
+- [ ] `GET /watch` returns `page(...)`, with an element that has the id `watch-list` and
+      `dataInit(get("/watch/list") { ... })`, with the same two settings as in lesson 3.
+- [ ] `GET /watch/list` calls `sendLatest`, with `selector = "#watch-list"` and `INNER`.
+- [ ] A `data class WatchSignals(val name: String = "")`, and a field with
+      `dataBind(WatchSignals::name)`.
+- [ ] `POST /watch` reads the signals with `readSignalsOr(WatchSignals(), streamlord)`, adds the
+      name with `update`, and answers 204.
+- [ ] `ContentSecurityPolicyTest` has `"/watch"` in its list.
+
+</details>
+
+<details><summary>Solution</summary>
+
+The whole page, in `src/main/kotlin/forgelord/watch/WatchController.kt`:
+
+```kotlin
+package forgelord.watch
+
+import forgelord.page.dataBind
+import forgelord.page.fragment
+import forgelord.page.page
+import io.github.markusaugust.streamlord.core.application.Streamlord
+import io.github.markusaugust.streamlord.core.domain.ElementPatchMode
+import io.github.markusaugust.streamlord.core.domain.PatchElements
+import io.github.markusaugust.streamlord.html.FetchOptions
+import io.github.markusaugust.streamlord.html.dataInit
+import io.github.markusaugust.streamlord.html.dataOnSubmit
+import io.github.markusaugust.streamlord.html.get
+import io.github.markusaugust.streamlord.html.post
+import io.github.markusaugust.streamlord.spring.cspNonce
+import io.github.markusaugust.streamlord.spring.datastarStream
+import io.github.markusaugust.streamlord.spring.readSignalsOr
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.html.ButtonType
+import kotlinx.html.FlowContent
+import kotlinx.html.button
+import kotlinx.html.div
+import kotlinx.html.form
+import kotlinx.html.h1
+import kotlinx.html.id
+import kotlinx.html.input
+import kotlinx.html.label
+import kotlinx.html.li
+import kotlinx.html.main
+import kotlinx.html.p
+import kotlinx.html.ul
+import no.lotek.HeadingSize
+import no.lotek.Lt
+import no.lotek.html.lt
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+
+const val WATCH_LIST_ID = "watch-list"
+
+/** Lesson 5: who stands watch tonight. A page, a stream, and one command. */
+@RestController
+class WatchController(
+    private val streamlord: Streamlord,
+) {
+    /** The names on the watch, in the order they came. */
+    private val watch = MutableStateFlow(emptyList<String>())
+
+    @GetMapping("/watch", produces = [MediaType.TEXT_HTML_VALUE])
+    fun page(request: HttpServletRequest): String =
+        page("The watch", request.cspNonce, css = "") {
+            main {
+                h1 { lt(Lt.heading(size = HeadingSize.XL)); +"The watch" }
+                watchForm()
+                div {
+                    id = WATCH_LIST_ID
+                    dataInit(
+                        get("/watch/list") {
+                            requestCancellation = FetchOptions.RequestCancellation.CLEANUP
+                            retryMaxCount = 1000
+                        },
+                    )
+                    watchList(watch.value)
+                }
+            }
+        }
+
+    @GetMapping("/watch/list")
+    fun list(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): StreamingResponseBody =
+        response.datastarStream(streamlord, request = request, timeout = Duration.INFINITE) {
+            sendLatest(watch, minInterval = 50.milliseconds, resumeFrom = request.getHeader("Last-Event-ID")) { names ->
+                listOf(PatchElements(fragment { watchList(names) }, selector = "#$WATCH_LIST_ID", mode = ElementPatchMode.INNER))
+            }
+        }
+
+    @PostMapping("/watch")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun standWatch(request: HttpServletRequest) {
+        val name = request.readSignalsOr(WatchSignals(), streamlord).name.trim()
+
+        if (name.isNotEmpty()) watch.update { it + name }
+    }
+}
+
+/** The signals the page sends. */
+data class WatchSignals(
+    val name: String = "",
+)
+
+private fun FlowContent.watchForm() {
+    form {
+        dataOnSubmit(post("/watch")) { prevent = true }
+
+        div {
+            val field = Lt.field(id = "name")
+            label { lt(field.label); +"Your name" }
+            input {
+                lt(Lt.input(), field.control)
+                dataBind(WatchSignals::name)
+            }
+        }
+        button {
+            lt(Lt.button())
+            type = ButtonType.submit
+            +"Stand watch"
+        }
+    }
+}
+
+private fun FlowContent.watchList(names: List<String>) {
+    if (names.isEmpty()) {
+        p { lt(Lt.paragraph()); +"Nobody stands watch yet." }
+    } else {
+        ul {
+            lt(Lt.list())
+            names.forEach { li { +it } }
+        }
+    }
+}
+```
+
+In `ArchitectureTest`, a row in `MAY_USE`:
+
+```kotlin
+"watch" to setOf("page"),
+```
+
+In this README, under "Where the code is": a box and an arrow in the diagram, and a line in the tree.
+
+```text
+        watch["watch"]
+    watch --> page
+│   │   ├── watch/          Lesson 5, your own page
+```
+
+And `"/watch"` in the list of paths in `ContentSecurityPolicyTest`.
+
+The field keeps the name after you click. To empty it, the command answers with `patchSignals`
+instead of 204, as the board's form does when a quest is nailed up.
+
+</details>
+
+### Kotlin in this lesson
+
+All in the solution:
+
+- `emptyList<String>()`. A list with nothing in it. `<String>` says what it will hold, since there
+  is no item to tell from.
+- `watch.update { it + name }`. A list plus an item is a new list, with the item last. The old list
+  is not changed, as with the map in lesson 3.
+- `name.isNotEmpty()` and `names.isEmpty()`. Both ask the same of a text and of a list.
+- `names.forEach { li { +it } }`. Runs what is in the braces once for each item. `it` is the item.
+
 ## When you build on it
 
 The lessons do not need this section.
@@ -798,8 +1049,8 @@ once, for the page's CSS. Eight tests hold the structure:
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
 
-A new page with its own CSS needs a CSS file, a `…Classes` object beside it, and a line in
-`ClassesTest`. A new component's CSS also goes in `ComponentStyles.FILES`.
+A new page follows the recipe in [lesson 5](#the-recipe). A new component's CSS needs a
+`…Classes` object and a line in `ClassesTest`, and it also goes in `ComponentStyles.FILES`.
 
 **Security.** Every page is served with a strict Content-Security-Policy and a new nonce per
 request (`configuration/StreamlordConfiguration.kt`), and `ContentSecurityPolicyTest` checks it on
