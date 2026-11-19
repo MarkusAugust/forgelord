@@ -3,7 +3,10 @@ package forgelord
 import forgelord.components.cardlist.CardListClasses
 import forgelord.components.shell.ShellClasses
 import forgelord.ledger.LedgerPageClasses
-import forgelord.quests.web.QuestPageClasses
+import forgelord.lesson1hello.HelloPageClasses
+import forgelord.lesson2notice.NoticePageClasses
+import forgelord.lesson3together.TogetherPageClasses
+import forgelord.lesson4quests.web.QuestPageClasses
 import java.lang.reflect.Modifier
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +22,10 @@ class ClassesTest {
         mapOf(
             CardListClasses to "components/cardlist/CardList.css",
             ShellClasses to "components/shell/Shell.css",
-            QuestPageClasses to "quests/web/QuestPage.css",
+            HelloPageClasses to "lesson1hello/HelloPage.css",
+            NoticePageClasses to "lesson2notice/NoticePage.css",
+            TogetherPageClasses to "lesson3together/TogetherPage.css",
+            QuestPageClasses to "lesson4quests/web/QuestPage.css",
             LedgerPageClasses to "ledger/LedgerPage.css",
         )
 

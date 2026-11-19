@@ -27,8 +27,8 @@ enum class Outcome { DONE, CLOSED, UNKNOWN }
  * The Ledger: a stand-in for the service a real app would read its data from.
  *
  * It keeps its entries in memory, and the switch on /ledger opens it, wipes it or closes it, so
- * the board can be seen with quests, with none, and with the Ledger gone. Nothing in `quests/`
- * knows it is here: the board only ever reaches it over HTTP.
+ * the board can be seen with quests, with none, and with the Ledger gone. Nothing in
+ * `lesson4quests/` knows it is here: the board only ever reaches it over HTTP.
  */
 @Component
 class Ledger {
