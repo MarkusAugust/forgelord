@@ -107,7 +107,7 @@ private fun FlowContent.noticeCard(
         lt(Lt.card())
         h2 { lt(Lt.card.title); +notice.name }
         p { lt(Lt.paragraph(size = Size.SMALL)); +"Asked by ${notice.askedBy}" }
-        p { lt(Lt.paragraph()); +ridersText(riders) }
+        p(NoticePageClasses.RIDERS) { lt(Lt.paragraph()); +ridersText(riders) }
         button {
             lt(Lt.button(variant = ButtonVariant.SECONDARY))
             type = ButtonType.button

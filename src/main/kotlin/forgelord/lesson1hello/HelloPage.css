@@ -1,3 +1,7 @@
-/* Lesson 1's own CSS. It has no rules yet: LO-TEK styles the page. The README says how to add one. */
+/* Lesson 1's own CSS. LO-TEK styles the rest of the page. The README says how to add a rule. */
 @layer forgelord-page {
+  /* The greeting, in the theme's accent colour. */
+  .forgelord-hello-greeting {
+    color: var(--lt-color-accent-text);
+  }
 }

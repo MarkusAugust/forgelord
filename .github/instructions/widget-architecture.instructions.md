@@ -15,7 +15,7 @@ src/main/kotlin/forgelord/
 ├── components/                    reusable UI components, independent of any domain
 ├── lesson1hello/
 │   ├── HelloController.kt         lesson 1 in one file: the page, one command, the view
-│   └── HelloPage.css, HelloPageClasses.kt   the page's CSS, with no rules yet
+│   └── HelloPage.css, HelloPageClasses.kt   the page's CSS, with one class to build on
 ├── lesson2notice/
 │   ├── NoticeController.kt        lesson 2 in one file: a list, and a command that answers with a card
 │   └── NoticePage.css, NoticePageClasses.kt
@@ -38,7 +38,7 @@ src/main/kotlin/forgelord/
 └── ledger/                        a stand-in source service, reached only over HTTP
 ```
 
-A lesson's folder has the lesson's number in its name, so the folders sort in the order the README teaches them. A page that is not a lesson is named after its domain, with no number. Lessons 1 to 3 each have a CSS file with no rules and an empty `…PageClasses` object, already passed to `page(...)` and listed in `ClassesTest`, so a reader can try a rule without setting anything up.
+A lesson's folder has the lesson's number in its name, so the folders sort in the order the README teaches them. A page that is not a lesson is named after its domain, with no number. Lessons 1 to 3 each have a CSS file with one rule and a `…PageClasses` object with its constant, passed to `page(...)` and listed in `ClassesTest`, so a reader has an example to build on and nothing to set up.
 
 Keep the controller and the domain's views together in `<domain>/web/`; `Controller` describes a Spring role, not a package. A source client and its DTOs belong in `client/`. The client answers in the domain's own types (`Reading`, `WriteResult`) and throws nothing: status codes, timeouts and HTTP exceptions stop there, and the service never catches one. The service loads and coordinates domain data; the controller and the views do not.
 

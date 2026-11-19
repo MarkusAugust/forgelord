@@ -149,7 +149,7 @@ private fun FlowContent.cards(riders: Map<String, Int>) {
     cardList(QUESTS, cardId = { "together-${it.id}" }) { quest ->
         h3 { lt(Lt.card.title); +quest.name }
         p { lt(Lt.paragraph(size = Size.SMALL)); +"Asked by ${quest.askedBy}" }
-        p { lt(Lt.paragraph()); +ridersText(riders.getValue(quest.id)) }
+        p(TogetherPageClasses.RIDERS) { lt(Lt.paragraph()); +ridersText(riders.getValue(quest.id)) }
         button {
             lt(Lt.button(variant = ButtonVariant.SECONDARY))
             type = ButtonType.button

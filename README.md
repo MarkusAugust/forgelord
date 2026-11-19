@@ -97,7 +97,7 @@ event in it, and the event carries HTML:
 
 ```text
 event: datastar-patch-elements
-data: elements <p id="greeting" class="lt-paragraph" data-variant="lead">Hello, Ada.</p>
+data: elements <p class="forgelord-hello-greeting lt-paragraph" id="greeting" data-variant="lead">Hello, Ada.</p>
 ```
 
 Typing sent nothing. The signal stays on the page until a request takes it along.
@@ -117,10 +117,11 @@ What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/lesson1he
 - `main { h1 { ... } }`. kotlinx.html: each tag is a function, and the braces after it are a
   lambda, a function without a name, that writes what goes inside the tag. It does JSX's job, in
   plain Kotlin. When a lambda is the last argument, it is written after the parentheses, as in
-  `page(...) { ... }`, and when it is the only one, `()` is left out.
+  `page(...) { ... }`, and when it is the only one, `()` is left out. A tag's own CSS class goes
+  in its parentheses: `p(HelloPageClasses.GREETING) { ... }`.
 - `css = helloPageCss` in `page(...)`, and `size = HeadingSize.XL`. An argument given by its name,
   so the order does not matter and the call says what each value is. `helloPageCss` is the one
-  name here that is not in this file. It is the lesson's own CSS, which has no rules yet:
+  name here that is not in this file. It is the lesson's own CSS, which has one rule:
   [Try some CSS](#try-some-css), after the exercises, says where it lives.
 - `+"Hello Gallowmark"`. `+` before a string adds it as text to the tag it is in.
 - `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
@@ -377,39 +378,49 @@ or VS Code, the line is marked as you type it. Take both lines out again, and pu
 
 ### Try some CSS
 
-No exercise asks for CSS, but every lesson has a place to try it. Lesson 1's is
-[`lesson1hello/HelloPage.css`](src/main/kotlin/forgelord/lesson1hello/HelloPage.css). It is on
-the page already, and has no rules yet. A class of your own goes in three places.
+No exercise asks for CSS, but every lesson has a place to try it, with one class in it to build
+on. Lesson 1's is [`lesson1hello/HelloPage.css`](src/main/kotlin/forgelord/lesson1hello/HelloPage.css).
+Its one rule gives the greeting the theme's accent colour. Change the rule, build, and the page
+shows it.
 
-A constant, in [`HelloPageClasses.kt`](src/main/kotlin/forgelord/lesson1hello/HelloPageClasses.kt).
-An `object` is a class with exactly one instance, and here it only holds names. `const val` is a
-value known when the code is compiled. The object has no braces yet, so give it some:
+A class is in three places, and the greeting's shows all three:
 
-<!-- solution: replace lesson1hello/HelloPageClasses.kt :: object HelloPageClasses -->
+- **A constant,** `GREETING`, in the object `HelloPageClasses` in
+  [`HelloPageClasses.kt`](src/main/kotlin/forgelord/lesson1hello/HelloPageClasses.kt). An `object`
+  is a class with exactly one instance, and here it only holds names. `const val` is a value known
+  when the code is compiled.
+- **A rule,** `.forgelord-hello-greeting`, in `HelloPage.css`, inside the braces of
+  `@layer forgelord-page`.
+- **The class on the tag,** `p(HelloPageClasses.GREETING) {` in the function `greeting` in
+  `HelloController.kt`. A tag function takes the tag's class in its parentheses.
+
+To add a class of your own, do the same three. Here the heading gets one.
+
+In the object `HelloPageClasses`, on the line after `const val GREETING`:
+
+<!-- solution: after lesson1hello/HelloPageClasses.kt :: const val GREETING -->
 ```kotlin
-object HelloPageClasses {
-    const val GREETING = "forgelord-hello-greeting"
-}
+const val TITLE = "forgelord-hello-title"
 ```
 
-The rule, in `HelloPage.css`, inside the braces of `@layer forgelord-page`:
+In `HelloPage.css`, after the rule for `.forgelord-hello-greeting`, inside the braces of the
+`@layer`:
 
-<!-- solution: inside lesson1hello/HelloPage.css :: @layer forgelord-page { -->
+<!-- solution: after lesson1hello/HelloPage.css :: .forgelord-hello-greeting { -->
 ```css
-.forgelord-hello-greeting {
-  color: var(--lt-color-accent-text);
+.forgelord-hello-title {
+  text-transform: uppercase;
 }
 ```
 
-And the class on the tag. In the function `greeting` in `HelloController.kt`, the line `p {`
-becomes:
+And in the function `page` in `HelloController.kt`, the line with `h1 {` becomes:
 
-<!-- solution: replace-head lesson1hello/HelloController.kt :: id = "greeting" -->
+<!-- solution: replace-line lesson1hello/HelloController.kt :: h1 { -->
 ```kotlin
-p(HelloPageClasses.GREETING) {
+h1(HelloPageClasses.TITLE) { lt(Lt.heading(size = HeadingSize.XL)); +"Hello Gallowmark" }
 ```
 
-A tag function takes the tag's class in its parentheses. Build, and the greeting has the colour.
+Build, and the heading is in capitals.
 
 The `val helloPageCss` under the object reads the CSS file, the first time it is asked for, and
 `page(...)` puts it in the page's `<style>`. You do not have to change it.
@@ -471,7 +482,8 @@ What you need to read [`NoticeController.kt`](src/main/kotlin/forgelord/lesson2n
 
 To try some CSS here, the file is
 [`lesson2notice/NoticePage.css`](src/main/kotlin/forgelord/lesson2notice/NoticePage.css), with
-`NoticePageClasses` beside it. It works as in [lesson 1](#try-some-css).
+`NoticePageClasses` beside it. Its one class, `RIDERS`, is on the count. It works as in
+[lesson 1](#try-some-css).
 
 ### Exercise 5: A badge for a popular quest
 
@@ -575,7 +587,8 @@ What you need to read [`TogetherController.kt`](src/main/kotlin/forgelord/lesson
 
 To try some CSS here, the file is
 [`lesson3together/TogetherPage.css`](src/main/kotlin/forgelord/lesson3together/TogetherPage.css),
-with `TogetherPageClasses` beside it. It works as in [lesson 1](#try-some-css).
+with `TogetherPageClasses` beside it. Its one class, `RIDERS`, is on the count. It works as in
+[lesson 1](#try-some-css).
 
 ### Exercise 6: Turn back
 
@@ -1168,7 +1181,7 @@ Every page in this app is made the same way. Lesson 3's file has most of it in o
    is what puts your page under the test.
 8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it with the `val` that
    reads the file, that `val` passed to `page(...)`, and a line in `ClassesTest`. Lessons 1 to 3
-   have all four, with no rules yet: copy `HelloPage.css` and `HelloPageClasses.kt`, give them
+   have all four, with one class each: copy `HelloPage.css` and `HelloPageClasses.kt`, give them
    your page's name, and change the path in `stylesheet(...)` to the new file. With the old path
    the page gets lesson 1's CSS, and no test says so.
 

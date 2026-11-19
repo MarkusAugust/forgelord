@@ -1,3 +1,7 @@
-/* Lesson 2's own CSS. It has no rules yet: LO-TEK styles the page. The README says how to add one. */
+/* Lesson 2's own CSS. LO-TEK styles the rest of the page. The README says how to add a rule. */
 @layer forgelord-page {
+  /* The count on a card, in the theme's accent colour. */
+  .forgelord-notice-riders {
+    color: var(--lt-color-accent-text);
+  }
 }

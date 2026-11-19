@@ -103,7 +103,7 @@ private fun FlowContent.helloForm() {
 
 /** The one element the answer replaces, in step 5. */
 private fun FlowContent.greeting(text: String) {
-    p {
+    p(HelloPageClasses.GREETING) {
         id = "greeting"
         lt(Lt.paragraph(variant = ParagraphVariant.LEAD))
         +text
