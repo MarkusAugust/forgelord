@@ -1,4 +1,4 @@
-# Forgelord
+# Forgelord course
 
 A small server-rendered web app: Kotlin, Spring Boot 4 with Spring MVC, kotlinx.html,
 [Streamlord](https://streamlord.sobernetics.no) for Datastar, and

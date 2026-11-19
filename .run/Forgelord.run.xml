@@ -9,7 +9,7 @@
     restarts with the new code, and the open page reloads itself.
   -->
   <configuration default="false" name="Forgelord" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="forgelord.main" />
+    <module name="forgelord-course.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="forgelord.MainKt" />
     <option name="VM_PARAMETERS" value="-Djava.rmi.server.hostname=localhost" />
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
