@@ -621,7 +621,7 @@ button in [`cards`](src/main/kotlin/forgelord/lesson3together/TogetherController
 `rideOut` is the pattern. A command changes `riders` and answers 204. It sends no HTML: the
 stream does that, for every window. What differs here is the URL, and what happens to the count.
 
-The new button is the quieter of the two, so "Ride out" stays the main one. LO-TEK's
+The new button takes something away, so it should not look like "Ride out". LO-TEK's
 [button](https://lo-tek.sobernetics.no/components/button/) has variants for that: `Lt.button(variant = ...)` takes a value
 of the enum `ButtonVariant`.
 
@@ -653,7 +653,7 @@ And in the function `cards`, near the bottom of the file, after the `button { ..
 <!-- solution: after-enclosing lesson3together/TogetherController.kt :: +"Ride out" -->
 ```kotlin
 button {
-    lt(Lt.button(variant = ButtonVariant.GHOST))
+    lt(Lt.button(variant = ButtonVariant.DANGER))
     type = ButtonType.button
     dataOnClick(post("/together/${quest.id}/turn-back"))
     +"Turn back"
@@ -892,7 +892,7 @@ and reads the board again. The controller turns the `WriteResult` into 204 or a 
 Build after each file. Until the controller has its command, nothing calls the new code, and that
 is fine.
 
-The button is the one from exercise 6: LO-TEK's [button](https://lo-tek.sobernetics.no/components/button/), in a quieter
+The button is the one from exercise 6: LO-TEK's [button](https://lo-tek.sobernetics.no/components/button/), in another
 variant than "Ride out".
 
 </details>
@@ -955,7 +955,7 @@ out", inside the same `div`:
 <!-- solution: after-enclosing lesson4quests/web/QuestView.kt :: +"Ride out" -->
 ```kotlin
 button {
-    lt(Lt.button(variant = ButtonVariant.GHOST))
+    lt(Lt.button(variant = ButtonVariant.DANGER))
     type = ButtonType.button
     dataOnClick(post("/quests/${quest.id}/turn-back"))
     +"Turn back"
