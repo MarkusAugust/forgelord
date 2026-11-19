@@ -864,10 +864,18 @@ Kotlin in this step:
 ### Exercise 9: Turn back, on the board
 
 Exercise 6 again, on the board: a "Turn back" button beside "Ride out" takes one rider off the
-quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do it:
-`DELETE /ledger/quests/{id}/riders` answers as a ride does, and never goes below none. The board
-does not ask for it yet. When the Ledger does not take it, the one who clicked gets the toast a
-ride gives, ending "Nobody turned back."
+quest.
+
+What is there, and what is missing:
+
+- **The Ledger can already do it.** `DELETE /ledger/quests/{id}/riders` takes one rider off. It
+  answers as a ride does, and never goes below none.
+- **The board cannot.** Nothing in `lesson4quests/` sends that request: the client, the service
+  and the controller know only how to ride out. That is what you write.
+
+When you are done, the button posts to `/quests/{id}/turn-back` on the board's controller, and the
+controller answers as it does for a ride: 204 when the Ledger took it, and otherwise a toast for
+the one who clicked. The toast ends "Nobody turned back."
 
 **New here:** one change that goes through every layer of the board: the client, the service,
 the controller and the view.
