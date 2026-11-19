@@ -61,3 +61,5 @@ The rules for each part are in `.github/instructions/`:
 - An exercise has the same number and title in its README heading and in `@Disabled("Exercise 9: …")`,
   and its `**Test:**` line links to the test. A new exercise moves the numbers after it in both
   places. `ReadmeTest` fails when they differ.
+- Where an exercise asks the reader for a part of LO-TEK they have not used yet, such as the
+  badge, its `**New here:**` line or its hint links to that component's page in LO-TEK's docs.

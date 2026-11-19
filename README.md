@@ -21,7 +21,9 @@ The server writes all the HTML. [Datastar](https://data-star.dev), one small scr
 sends what you typed to the server as JSON, and the server answers with new HTML for a part of the
 page. You write no JavaScript: what to show, and what is valid, is decided on the server.
 Streamlord is the Kotlin side of that: it reads what Datastar sends and writes what it gets back. LO-TEK is the design
-system: you call `Lt.button()`, and the button gets LO-TEK's classes.
+system: you call `Lt.button()`, and the button gets LO-TEK's classes. Its docs have a page for
+[every component](https://lo-tek.sobernetics.no/components/), each with an example in kotlinx.html, and one for the
+[builders in Kotlin](https://lo-tek.sobernetics.no/kotlin/).
 
 The words the code and the lessons use:
 
@@ -199,6 +201,10 @@ argument in `greet`, and a parameter of `greetingFor`. `from` goes beside it in 
 The page sends every signal it has, but the server only reads the ones `HelloSignals` has a
 property for.
 
+The new field is built like the one for the name: a `div` with a `label` and an `input`, tied
+together by `Lt.field(id = ...)`. LO-TEK's docs: [field](https://lo-tek.sobernetics.no/components/field/) and
+[input](https://lo-tek.sobernetics.no/components/input/).
+
 The greeting now has three cases: no name, a name with no place, and both. `if` with `else if`
 does it. So does `when` with nothing after it, which takes the first condition that is true:
 `when { name.isEmpty() -> "..."; else -> "..." }`, with each case on a line of its own.
@@ -335,6 +341,7 @@ Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-a
 
 A `p { }` after the `input`, inside the same `div`. In its braces, `dataText(...)` takes the
 expression the text follows.
+`lt(Lt.paragraph())` gives it the look of LO-TEK's [paragraph](https://lo-tek.sobernetics.no/components/paragraph/).
 
 Name the signal the way `dataBind` does, by its property: `signal(HelloSignals::name)` writes the
 expression for you. Both need an import: `dataText` from Streamlord, and `signal` from
@@ -431,6 +438,7 @@ Three things to know:
   rule for one of LO-TEK's classes, such as `.lt-button`, fails it. Give the tag a class of your
   own, as above.
 - Colours and sizes come from LO-TEK's tokens, `var(--lt-...)`, so the page follows the theme.
+  [Design tokens](https://lo-tek.sobernetics.no/design-tokens/) lists them.
 - The `@layer` puts your rules after LO-TEK's, so yours win without `!important`.
 
 ## Lesson 2: A list and a command
@@ -490,7 +498,8 @@ To try some CSS here, the file is
 When three or more have ridden out on a quest, its card shows a badge that says "Popular".
 
 **New here:** markup that depends on a value. Inside a tag's braces you are in ordinary Kotlin, so
-an `if` decides whether a tag is written. And a new part of LO-TEK, the badge.
+an `if` decides whether a tag is written. And a new part of LO-TEK, the
+[badge](https://lo-tek.sobernetics.no/components/badge/).
 
 **Test:** [`a quest three have ridden out on gets a badge`](src/test/kotlin/forgelord/exercises/Lesson2NoticeExercisesTest.kt#L22).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
@@ -504,6 +513,9 @@ count, write an `if (riders >= 3) { ... }` with a `span { }` in it.
 
 LO-TEK's badge goes on the `span` as its button goes on a `button`: `lt(Lt.badge(...))`. The text
 goes in with `+`.
+
+The [badge's page](https://lo-tek.sobernetics.no/components/badge/) shows its colours. In Kotlin a colour is a value of the
+enum `BadgeColor`.
 
 </details>
 
@@ -608,6 +620,10 @@ button in [`cards`](src/main/kotlin/forgelord/lesson3together/TogetherController
 
 `rideOut` is the pattern. A command changes `riders` and answers 204. It sends no HTML: the
 stream does that, for every window. What differs here is the URL, and what happens to the count.
+
+The new button is the quieter of the two, so "Ride out" stays the main one. LO-TEK's
+[button](https://lo-tek.sobernetics.no/components/button/) has variants for that: `Lt.button(variant = ...)` takes a value
+of the enum `ButtonVariant`.
 
 </details>
 
@@ -875,6 +891,9 @@ and reads the board again. The controller turns the `WriteResult` into 204 or a 
 
 Build after each file. Until the controller has its command, nothing calls the new code, and that
 is fine.
+
+The button is the one from exercise 6: LO-TEK's [button](https://lo-tek.sobernetics.no/components/button/), in a quieter
+variant than "Ride out".
 
 </details>
 
@@ -1167,7 +1186,8 @@ Every page in this app is made the same way. Lesson 3's file has most of it in o
    row's arrows. `./gradlew test` says what is missing.
 3. **The page.** A `@RestController` that takes `Streamlord` in its constructor, with a
    `@GetMapping` that returns `page(title, request.cspNonce, css) { ... }`, as
-   [`page`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L77) does.
+   [`page`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L77) does. What goes on
+   it comes from LO-TEK: [its components](https://lo-tek.sobernetics.no/components/) are listed with an example each.
 4. **The state.** What the page shows, in one `MutableStateFlow`.
 5. **The stream.** On the page, an element with an id and `dataInit(get(...))`. On the server, an
    endpoint that sends the state with `sendLatest`, `INNER` into that element, as
