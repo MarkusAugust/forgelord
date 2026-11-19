@@ -1,4 +1,4 @@
-# Forgelord
+# Forgelord course
 
 A course in building server-rendered web apps in Kotlin and Spring MVC, with
 [Streamlord](https://streamlord.sobernetics.no) and [LO-TEK](https://lo-tek.sobernetics.no). Five lessons, each a step from the one before: a page
@@ -51,7 +51,7 @@ The words the code and the lessons use:
 You need Java 21 or newer. Gradle comes with the repository.
 
 ```bash
-git clone https://github.com/MarkusAugust/forgelord && cd forgelord
+git clone https://github.com/MarkusAugust/forgelord-course && cd forgelord-course
 ./gradlew bootRun
 ```
 

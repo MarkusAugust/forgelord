@@ -1,5 +1,5 @@
 {
-  "name": "Forgelord",
+  "name": "Forgelord course",
   "image": "mcr.microsoft.com/devcontainers/java:21",
   "customizations": {
     "vscode": {
