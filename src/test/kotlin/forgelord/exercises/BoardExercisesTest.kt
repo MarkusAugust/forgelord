@@ -22,8 +22,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 /**
- * The exercises for lesson 4, the board. Exercise 9 checks the form's rules alone. Exercises 8 and
- * 10 run against the whole app on a real server, with the Ledger behind HTTP, so they pass only
+ * The exercises for lesson 4, the board. Exercise 10 checks the form's rules alone. Exercises 9 and
+ * 11 run against the whole app on a real server, with the Ledger behind HTTP, so they pass only
  * when every layer does its part. Remove `@Disabled` from one, run it, and change the code until
  * it passes. The README has the steps, a hint and a solution.
  */
@@ -35,7 +35,7 @@ class BoardExercisesTest {
     private lateinit var client: RestTestClient
 
     @Test
-    @Disabled("Exercise 8: Turn back, on the board")
+    @Disabled("Exercise 9: Turn back, on the board")
     fun `a rider can turn back on the board`() {
         val quest = "what-the-river-carries"
         val card = fragment { boardView(QuestResult.Found(listOf(Quest(quest, "What the River Carries", "A River-Priest", "Go north.", 10, riders = 1)))) }
@@ -59,7 +59,7 @@ class BoardExercisesTest {
     }
 
     @Test
-    @Disabled("Exercise 9: Keep the task short")
+    @Disabled("Exercise 10: Keep the task short")
     fun `what has to be done fits in 300 characters`() {
         val quest = QuestForm(name = "Wolves at the Ford", giver = "Ulf", text = "x".repeat(300), reward = "20")
 
@@ -69,7 +69,7 @@ class BoardExercisesTest {
     }
 
     @Test
-    @Disabled("Exercise 10: A name already on the post")
+    @Disabled("Exercise 11: A name already on the post")
     fun `a quest cannot take the name of one already on the post`() {
         val answer =
             client.datastar("/quests", """{"quest":{"name":"a tenth of the wood","giver":"Ulf","text":"Five more.","reward":"30"}}""")

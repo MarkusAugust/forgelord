@@ -82,6 +82,61 @@ a `HelloSignals`. A signal missing from the JSON gets its default in the class, 
 no signals at all gets the `HelloSignals()` given in the call. A request whose body is not JSON is
 refused with `415 Unsupported Media Type`.
 
+**If you come from React.** A signal is state that lives on the page, and `dataBind` is a
+controlled input without the `onChange`. What is missing is a component that renders in the
+browser. `greeting` runs on the server, and what comes back is its HTML. The `id` on the element
+does what `key` does in a list: it is how the new element finds the old one.
+
+**Before you click.** Open the browser's developer tools, on the Network tab, and type a name.
+What will "Say hello" send, and what comes back?
+
+<details><summary>Answer</summary>
+
+One `POST /hello`, with the body `{"name":"Ada"}`. The answer is not JSON. It is a stream with one
+event in it, and the event carries HTML:
+
+```text
+event: datastar-patch-elements
+data: elements <p id="greeting" class="lt-paragraph" data-variant="lead">Hello, Ada.</p>
+```
+
+Typing sent nothing. The signal stays on the page until a request takes it along.
+
+</details>
+
+### Kotlin in this lesson
+
+What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt):
+
+- `class HelloController(private val streamlord: Streamlord)`. The constructor is written after
+  the class name, and `val` makes the parameter a property. Spring calls the constructor and passes
+  the `Streamlord` (injection, above).
+- `fun page(request: HttpServletRequest): String = page(...)`. A function whose body is one
+  expression has `=` and no `return`, like an arrow function without braces. The `page(...)` after
+  `=` is another function with the same name, from `page/Page.kt`.
+- `main { h1 { ... } }`. kotlinx.html: each tag is a function, and the braces after it are a
+  lambda, a function without a name, that writes what goes inside the tag. It does JSX's job, in
+  plain Kotlin. When a lambda is the last argument, it is written after the parentheses, as in
+  `page(...) { ... }`, and when it is the only one, `()` is left out.
+- `css = ""` in `page(...)`, and `size = HeadingSize.XL`. An argument given by its name, so the
+  order does not matter and the call says what each value is.
+- `+"Hello Gallowmark"`. `+` before a string adds it as text to the tag it is in.
+- `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
+  were a method on `FlowContent`, kotlinx.html's type for a tag that can hold other tags. This is
+  how a piece of markup gets a name, as a component does in React.
+- `data class HelloSignals(val name: String = "")`. A class that only holds values. `= ""` is the
+  value used when the JSON has no `name`.
+- `dataBind(HelloSignals::name)`. `::` gives the property itself, not its value, and the signal
+  gets its name from it. Misspell it, and the code does not compile.
+- `if (name.isEmpty()) "Hello, stranger." else "Hello, $name."`. `if` gives a value, as `? :` does
+  in JavaScript. `$name` in a string puts in the value of `name`, as `${name}` does in a template
+  literal.
+- `produces = [MediaType.TEXT_HTML_VALUE]` and `request.cspNonce` you can read past. The first says
+  the endpoint answers with HTML. The second is this request's nonce: a one-time code that lets the
+  page's own scripts run under the Content-Security-Policy.
+
+### The exercises
+
 The exercises are tests that are switched off. Open
 [`exercises/HelloExercisesTest.kt`](src/test/kotlin/forgelord/exercises/HelloExercisesTest.kt), delete
 the `@Disabled` line above one, and run it from the green arrow beside it. It fails. Change the code
@@ -215,39 +270,6 @@ or VS Code, the line is marked as you type it. Take both lines out again, and pu
 
 </details>
 
-### Kotlin in this lesson
-
-All in [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt):
-
-- `class HelloController(private val streamlord: Streamlord)`. The constructor's parameters are
-  written after the class name, and `val` makes each one a property of the object. Spring calls
-  the constructor and passes the `Streamlord` (injection, above).
-- `fun page(request: HttpServletRequest): String = page(...)`. A function whose body is one
-  expression is written with `=` and no `return`. The `page(...)` after `=` is a different
-  function with the same name, from `page/Page.kt`.
-- `produces = [MediaType.TEXT_HTML_VALUE]`. An argument given by its name. `[...]` makes an array,
-  and is only allowed in annotations.
-- `main { h1 { ... } }`. kotlinx.html: each tag is a function, and the code in the braces after it
-  writes what goes inside the tag. The braces are a lambda, a function without a name. When a
-  lambda is the last argument, it is written after the parentheses, and when it is the only one,
-  `()` is left out.
-- `+"Hello Gallowmark"`. `+` is an operator kotlinx.html defines on strings: it adds the text
-  inside the tag it is in.
-- `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
-  were a method on `FlowContent`, kotlinx.html's type for a tag that can hold other tags, and that
-  tag is `this` inside it.
-- `request.cspNonce`. An extension property Streamlord adds to the servlet request. It gives this
-  request's nonce: a one-time code that lets the page's own scripts run under the
-  Content-Security-Policy.
-- `data class HelloSignals(val name: String = "")`. A data class gets `equals`, `toString` and
-  `copy` made for it. `= ""` is the value used when the JSON has no `name`.
-- `dataBind(HelloSignals::name)`. `::` gives the property itself, not its value, and the function
-  takes the signal's name from it. Misspell it, and the code does not compile. `dataBind` here is
-  from [`page/Signals.kt`](src/main/kotlin/forgelord/page/Signals.kt); Streamlord's own takes the
-  name as a string, which nothing checks.
-- `if (name.isEmpty()) "Hello, stranger." else "Hello, $name."`. `if` is an expression: it gives a
-  value, so it can be the whole body after `=`. `$name` in a string puts in the value of `name`.
-
 ## Lesson 2: A list and a command
 
 <http://localhost:8080/notice> shows three quests, each with a "Ride out" button. Read
@@ -261,8 +283,39 @@ plain JSON, with no class to put them in, and refuses a body that is not JSON wi
 `readSignalsOr` does. The refusal is why it is there: an HTML form on another site can send form
 data or plain text, never JSON, so it cannot make a visitor ride out without knowing it.
 
-Open the page in a second window, and click there. The first window still shows the old number,
-until you reload it. The answer to a click goes only to the window that clicked.
+**If you come from React.** There the count would be state in the browser, and a click would set
+it. Here the count is on the server, and a click is a request whose answer is the card, rendered
+again. Nothing on the page works out what the card should say.
+
+**Before you try.** Open the page in a second window, and click "Ride out" there. What does the
+first window show?
+
+<details><summary>Answer</summary>
+
+The old number, until you reload it. The answer to a click goes only to the window that clicked.
+Lesson 3 changes that.
+
+</details>
+
+### Kotlin in this lesson
+
+What you need to read [`NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt):
+
+- `val NOTICES = listOf(...)`. A list that cannot be changed. It is declared outside the class, so
+  it is one list for the whole app.
+- `for (notice in NOTICES) { noticeCard(...) }`. A loop inside `main { }` writes one card for each
+  quest, where JSX would have `NOTICES.map(...)`.
+- `NOTICES.associate { it.id to AtomicInteger() }` in `riders`. In a lambda with one parameter,
+  `it` is that parameter. `a to b` makes a pair, and `associate` makes a map from the pairs.
+- `@PathVariable id: String` in `rideOut`. The `{id}` part of `/notice/{id}/ride`.
+- `NOTICES.find { it.id == id } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)`. `find`
+  gives a `Notice?`: a `Notice`, or `null` when none matches. `?:` gives what is on its right when
+  what is on its left is `null`, as `??` does in JavaScript.
+- `riders.getValue(id)`. Looks up a key that must be there, and throws an exception if it is not.
+- `when (count) { 0 -> ...; 1 -> ...; else -> ... }` in `ridersText`. A `switch` that gives a
+  value: the first branch that matches.
+- `"notice-${notice.id}"`. `${...}` is needed when what goes in the string is more than a plain
+  name, such as `notice.id`.
 
 ### Exercise 5: A badge for a popular quest
 
@@ -285,27 +338,6 @@ Only the card changes. The count was already there: `riders` is the card's param
 
 </details>
 
-### Kotlin in this lesson
-
-All in [`NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt):
-
-- `val NOTICES = listOf(...)`. A list that cannot be changed. It is declared outside the class, so
-  it is one list for the whole app.
-- `for (notice in NOTICES) { noticeCard(...) }`. A loop inside `main { }` writes one card for each
-  quest.
-- `NOTICES.associate { it.id to AtomicInteger() }` in `riders`. In a lambda with one parameter,
-  `it` is that parameter. `a to b` makes a pair, and `associate` makes a map from the pairs.
-- `@PathVariable id: String` in `rideOut`. The `{id}` part of `/notice/{id}/ride`.
-- `NOTICES.find { it.id == id } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)`. `find`
-  gives a `Notice?`: a `Notice`, or `null` when none matches. `?:` gives what is on its right
-  when what is on its left is `null`. After the line, Kotlin knows `notice` is not `null`.
-- `riders.getValue(id)`. Looks up a key that must be there, and throws an exception if it is not.
-  `riders[id]` would give `null` for a missing key.
-- `when (count) { 0 -> ...; 1 -> ...; else -> ... }` in `ridersText`. Picks the first branch that
-  matches, and gives its value.
-- `"notice-${notice.id}"`. `${...}` is needed when what goes in the string is more than a plain
-  name, such as `notice.id`.
-
 ## Lesson 3: Every window sees it
 
 <http://localhost:8080/together> is lesson 2's list again. Open it in two windows and ride out in
@@ -325,6 +357,40 @@ What changed:
   Lesson 2 wrote its card by hand. A component is a function more than one page uses; the board
   in lesson 4 uses the same two. Inside `cardList`'s last lambda, `this` is a `FlowContent`, so
   `h3 { }` and the other tags work there.
+
+**If you come from React.** This is where you would add a WebSocket and a store. Here the store
+is `riders`, on the server. Each window subscribes with one long request, and what comes down it
+is the store, rendered: `cards(counts)`. The view is a function of the state, as in React, but the
+function runs on the server.
+
+**Before you click.** Open the Network tab, and reload the page. "Ride out" answers 204, with no
+HTML. Which request brings the new count?
+
+<details><summary>Answer</summary>
+
+`board`, the request the page opened as it loaded. It has not finished, and it will not. Click on
+it and, in Chrome, open its EventStream tab: an event arrives for each ride, from any window. The
+click itself is one POST with an empty answer.
+
+</details>
+
+### Kotlin in this lesson
+
+What you need to read [`TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt):
+
+- `MutableStateFlow(...)`, `riders.value` and `riders.update { ... }`. From kotlinx.coroutines.
+  `value` is what the flow holds now, and `update` replaces it. You write no coroutine code here:
+  `sendLatest`, in the endpoint `board`, reads the flow for you.
+- `counts + (id to counts.getValue(id) + 1)` in `rideOut`. A map plus a pair is a new map, with
+  that key's value replaced. The old map is not changed, as when you spread an object into a new
+  one. `+` is done before `to`, so the pair is `id` and the count plus one.
+- `id !in riders.value`. `in` on a map asks whether the key is there.
+- `@ResponseStatus(HttpStatus.NO_CONTENT)` on `rideOut`. Makes Spring answer 204 instead of 200.
+  The function returns nothing, so the body is empty.
+- `cardList(QUESTS, cardId = { "together-${it.id}" }) { quest -> ... }`. Two lambdas: one passed
+  by name, and the last one after the parentheses. `quest ->` names the lambda's parameter instead
+  of `it`.
+- `const val TOGETHER_BOARD_ID`. A constant, known when the code is compiled.
 
 ### Exercise 6: Turn back
 
@@ -375,26 +441,27 @@ Nothing else: the stream already sends the cards whenever `riders` changes.
 
 </details>
 
-### Kotlin in this lesson
+### Exercise 7: Break the stream, and mend it
 
-All in [`TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt):
+In `board`, change `ElementPatchMode.INNER` to `ElementPatchMode.REPLACE`. Build, reload the page
+with the Network tab open, and ride out. There is no test: you are done when you can say what
+became of the stream, and `INNER` is back.
 
-- `MutableStateFlow(...)`, `riders.value` and `riders.update { ... }`. From kotlinx.coroutines.
-  `value` is what the flow holds now, and `update` replaces it. You write no coroutine code here:
-  `sendLatest`, in the endpoint `board`, reads the flow for you.
-- `counts + (id to counts.getValue(id) + 1)` in `rideOut`. A map plus a pair is a new map, with
-  that key's value replaced. The old map is not changed. `+` is done before `to`, so the pair is
-  `id` and the count plus one.
-- `id !in riders.value`. `in` on a map asks whether the key is there.
-- `@ResponseStatus(HttpStatus.NO_CONTENT)` on `rideOut`. Makes Spring answer 204 instead of 200.
-  The function returns nothing, so the body is empty.
-- `cardList(QUESTS, cardId = { "together-${it.id}" }) { quest -> ... }`. Two lambdas: one passed
-  by name, and the last one after the parentheses. `quest ->` names the lambda's parameter instead
-  of `it`.
-- `const val TOGETHER_BOARD_ID`. A constant, known when the code is compiled.
-- `fun <T> FlowContent.cardList(items: List<T>, ...)` in
-  [`CardList.kt`](src/main/kotlin/forgelord/components/cardlist/CardList.kt). `<T>` is a type
-  parameter: the list can hold any type, and `cardId` and the card get items of that type.
+**Where:** [`board`](src/main/kotlin/forgelord/together/TogetherController.kt#L107) in `together/TogetherController.kt`.
+
+<details><summary>Solution</summary>
+
+The cards show, and then nothing follows. A click still gets its 204, but the count stays where it
+was until you reload. In the Network tab, `board` finished right after its first event.
+
+`INNER` puts the cards inside the element with the id `together-board`. `REPLACE` puts them in its
+place, so the element is gone from the page. That element opened the stream, and `CLEANUP` closes
+a stream when its element leaves the page. Nothing is left to open it again.
+
+So the element that opens a stream stays, and the stream fills it. The board in lesson 4 and your
+own page in lesson 5 do the same.
+
+</details>
 
 ## Lesson 4: The board
 
@@ -405,9 +472,15 @@ What is new: the board reads its quests from the Ledger, a separate service it c
 Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
 wipe it or close it.
 
+**If you come from React.** The folders are ones you know by other names. `quests/client/` is
+the API client, `QuestService` is the store, and `quests/web/` has the route handlers and the
+components. `QuestResult` is the union of loading, data, empty and error that you would write in
+TypeScript.
+
 The page, the stream and the commands work as in lesson 3. But lesson 3 was one file, and the
 board is several folders. So this lesson comes in four steps. Each step names the few files it is
-about, and ends with an exercise. The exercises are in
+about, and ends with an exercise. The first three say what Kotlin is new in their files. The
+exercises are in
 [`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
 
 ### Where the code is
@@ -495,7 +568,30 @@ Read these, in this order:
 The board asks the Ledger again every two seconds while any window has it open, and a Ledger that
 takes more than two seconds to answer counts as closed.
 
-### Exercise 7: Four states
+Kotlin in this step:
+
+- `sealed interface QuestResult` in `QuestResult.kt`, with `data object Loading` and
+  `data class Found`. A sealed type has a fixed set of subtypes, as a union type has in TypeScript.
+  A `data object` is a type with exactly one value.
+- `when (result) { QuestResult.Loading -> ...; is QuestResult.Found -> ... }` in `boardView`. `is`
+  checks the type, and in that branch `result` has it: `result.quests` works. Leave a state out,
+  and the build fails.
+- `try { ... } catch (e: Exception) { ... }` in `QuestClient.quests`. `try` gives a value, as `if`
+  does: here a `Reading`, whether the Ledger answered or not.
+- The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
+  without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
+
+**Before you close the Ledger.** The board has a stream open, and the service behind it is about
+to fail. Does the stream break?
+
+<details><summary>Answer</summary>
+
+No. A closed Ledger is a state, `QuestResult.Unavailable`, and the stream sends it as it sends the
+quests. A stream that threw would end, and the page would stop following.
+
+</details>
+
+### Exercise 8: Four states
 
 Keep the board open in one window and `/ledger` in another. Wipe the Ledger, close it, open it.
 There is no test: you are done when you have seen the board loading, with quests, empty, and closed.
@@ -524,7 +620,22 @@ the words in `QuestResult.kt`.
 A ride that failed is answered with 200, not with an error status: Datastar runs nothing from an
 error status, and the toast is a script the page has to run.
 
-### Exercise 8: Turn back, on the board
+Kotlin in this step:
+
+- `enum class WriteResult { DONE, CLOSED, GONE }`. A fixed set of values.
+- `client.rideOut(id).also { readAgain() }` in `QuestService`. `also` runs what is in the braces,
+  and then gives back the value it was called on: the `WriteResult`.
+- `StreamingResponseBody?` and `return null` in `ViewController.rideOut`. The `?` says the function
+  may return `null`, which here means "no body". A `return` inside a `when` branch leaves the whole
+  function, so after the `when`, `why` is always a text.
+- `QuestPageClasses.CARD_FOOTER` in `questCard`. `QuestPageClasses` is an `object`, a class with
+  exactly one instance, in
+  [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). It holds the
+  page's CSS class names.
+- `catch (_: HttpClientErrorException.NotFound)` in `QuestClient.write`. The Ledger's 404, caught
+  by its type and turned into `GONE`. `_` in place of a name says the exception is not used.
+
+### Exercise 9: Turn back, on the board
 
 Exercise 6 again, on the board: a "Turn back" button beside "Ride out" takes one rider off the
 quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do it:
@@ -630,7 +741,18 @@ Datastar morphs it in, so the fields keep what was typed.
 | `nail` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The command. Unlike a ride, it answers with HTML: the form again |
 | [`quests/Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt) | `NewQuest`: a quest that has passed the rules. Only `check` can make one |
 
-### Exercise 9: Keep the task short
+Kotlin in this step:
+
+- `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
+- `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, as in
+  lesson 1. The form gets the field's id and its signal from it, so a field that does not exist
+  does not compile.
+- `data class NewQuest private constructor(...)` in `Quest.kt`, with `@PassedTheRules fun of(...)`.
+  Nobody outside the class can call a private constructor. `@RequiresOptIn` on the annotation makes
+  every call to `of` a compile error until the caller writes `@OptIn(PassedTheRules::class)`, as
+  `QuestForm.check` does.
+
+### Exercise 10: Keep the task short
 
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
 
@@ -668,7 +790,7 @@ real one. Read the Ledger first:
 | [`ledger/Ledger.kt`](src/main/kotlin/forgelord/ledger/Ledger.kt) | The entries, in memory. It can be open, wiped or closed |
 | [`ledger/LedgerController.kt`](src/main/kotlin/forgelord/ledger/LedgerController.kt) | Its JSON API under `/ledger/quests`, with a status code for each outcome, and the page at `/ledger` with the switch |
 
-### Exercise 10: A name already on the post
+### Exercise 11: A name already on the post
 
 Nailing up a quest with the name of one already on the post shows "<the name> is already on the
 post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
@@ -750,40 +872,9 @@ A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least
 WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
 
-If you solved exercise 8, the build fails in `turnBack` too. It gets the same line.
+If you solved exercise 9, the build fails in `turnBack` too. It gets the same line.
 
 </details>
-
-### Kotlin in this lesson
-
-- `sealed interface QuestResult` in [`QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt),
-  with `data object Loading` and `data class Found`. A sealed type has a fixed set of subtypes, all
-  in the same package. A `data object` is a type with exactly one value, whose `toString` gives
-  its name.
-- `when (result) { QuestResult.Loading -> ...; is QuestResult.Found -> ... }` in `boardView`. `is`
-  checks the type, and in that branch `result` has it: `result.quests` works. Leave a state out,
-  and the build fails.
-- `enum class WriteResult { DONE, CLOSED, GONE }`. A fixed set of values.
-- `object QuestPageClasses` and `val questPageCss by lazy { ... }` in
-  [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). An `object`
-  is a class with exactly one instance. `by lazy` works the value out the first time it is read.
-- `buildList { add(...) }` in `QuestForm.check`. Makes a list by adding to it inside the braces.
-- `data class NewQuest private constructor(...)` in [`Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt),
-  with `@PassedTheRules fun of(...)`. Nobody outside the class can call a private constructor.
-  `@RequiresOptIn` on the annotation makes every call to `of` a compile error until the caller
-  writes `@OptIn(PassedTheRules::class)`, as `QuestForm.check` does.
-- `QuestForm::name` in `Fault(QuestForm::name, ...)`. A reference to the property itself, not its
-  value. The form gets the field's id and its signal from it, so the name is written once, in the
-  class, and a field that does not exist does not compile.
-- `client.rideOut(id).also { readAgain() }` in `QuestService`. `also` runs what is in the braces,
-  and then gives back the value it was called on: the `WriteResult`.
-- `StreamingResponseBody?` and `return null` in `ViewController.rideOut`. The `?` says the function
-  may return `null`, which here means "no body". A `return` inside a `when` branch leaves the whole
-  function, so after the `when`, `why` is always a text.
-- `try { ... } catch (_: HttpClientErrorException.NotFound) { ... }` in `QuestClient.write`. `try`
-  gives a value, as `if` does. `_` in place of a name says the exception is not used.
-- The `flow { ... }.stateIn(...)` in `QuestService.board` is coroutines. You can read the rest
-  without it: `board` is a `StateFlow` as in lesson 3, and this code fills it by asking the Ledger.
 
 ## Lesson 5: Your own page
 
@@ -818,7 +909,7 @@ Every page in this app is made the same way. Lesson 3's file has most of it in o
 8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it, and a line in
    `ClassesTest`, as `quests/web/` has.
 
-### Exercise 11: The watch
+### Exercise 12: The watch
 
 The test is in
 [`exercises/WatchExercisesTest.kt`](src/test/kotlin/forgelord/exercises/WatchExercisesTest.kt).
@@ -1014,11 +1105,7 @@ And `"/watch"` in the list of paths in `ContentSecurityPolicyTest`.
 The field keeps the name after you click. To empty it, the command answers with `patchSignals`
 instead of 204, as the board's form does when a quest is nailed up.
 
-</details>
-
-### Kotlin in this lesson
-
-All in the solution:
+Kotlin that is new here:
 
 - `emptyList<String>()`. A list with nothing in it. `<String>` says what it will hold, since there
   is no item to tell from.
@@ -1026,6 +1113,8 @@ All in the solution:
   is not changed, as with the map in lesson 3.
 - `name.isNotEmpty()` and `names.isEmpty()`. Both ask the same of a text and of a list.
 - `names.forEach { li { +it } }`. Runs what is in the braces once for each item. `it` is the item.
+
+</details>
 
 ## When you build on it
 

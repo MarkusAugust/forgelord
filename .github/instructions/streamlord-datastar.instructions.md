@@ -9,7 +9,7 @@ The browser runs Datastar; the server speaks to it through Streamlord. The serve
 
 ## Commands go in, the view comes out
 
-- A page that shows live state opens **one stream** when it loads (`dataInit(get("/board") { requestCancellation = CLEANUP })`) and keeps it open. The stream renders the state with `sendLatest(state, minInterval, resumeFrom)` and patches it `INNER` into the element that opened it. Never `REPLACE` that element, or the stream restarts.
+- A page that shows live state opens **one stream** when it loads (`dataInit(get("/board") { requestCancellation = CLEANUP })`) and keeps it open. The stream renders the state with `sendLatest(state, minInterval, resumeFrom)` and patches it `INNER` into the element that opened it. Never `REPLACE` that element: the stream closes when its element leaves the page, and nothing opens it again.
 - The state is one `StateFlow` in the service, shared by every stream. Never call the source from inside a stream's render.
 - A **command** changes the state and answers for the one who sent it: `204` when it went through, nothing more. The change reaches every page, the sender's too, down the stream.
 - A command that fails answers the sender with a toast (`executeScript(showDangerToast(…))`). Datastar runs nothing from an error status, so the answer is a `200` stream.

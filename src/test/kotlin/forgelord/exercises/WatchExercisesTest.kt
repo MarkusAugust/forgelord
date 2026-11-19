@@ -30,7 +30,7 @@ class WatchExercisesTest {
     private lateinit var client: RestTestClient
 
     @Test
-    @Disabled("Exercise 11: The watch")
+    @Disabled("Exercise 12: The watch")
     fun `a name put on the watch reaches every open window`() =
         // Unit, said out loud: JUnit skips a test method that returns anything else, silently.
         runBlocking<Unit> {
