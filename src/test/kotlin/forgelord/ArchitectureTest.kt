@@ -11,11 +11,12 @@ import kotlin.test.assertTrue
  * A folder may use what its row names and nothing else, so a new folder can use nothing, and
  * nothing can use it, until the table says so. The reasons behind the rows:
  *
- * - `hello` and `notice` use `page` alone, so each can be read and copied on its own. `together`
- *   adds `components`. No lesson uses another.
+ * - `lesson1hello` and `lesson2notice` use `page` alone, so each can be read and copied on its
+ *   own. `lesson3together` adds `components`. No lesson uses another.
  * - `page` uses nothing, and `components` only `page`, so both can go into another app.
  * - Nothing uses `ledger`. The board reaches it over HTTP, as it would any other service.
- * - `quests/web` uses `quests`, never the other way round, and never `quests/client`.
+ * - `lesson4quests/web` uses `lesson4quests`, never the other way round, and never
+ *   `lesson4quests/client`.
  * - Nothing uses `configuration` by name: Spring hands its beans out. It uses `page` for one
  *   thing, the script that reloads a page in development.
  */
@@ -49,12 +50,12 @@ class ArchitectureTest {
     companion object {
         val MAY_USE: Map<String, Set<String>> =
             mapOf(
-                "hello" to setOf("page"),
-                "notice" to setOf("page"),
-                "together" to setOf("components", "page"),
-                "quests/web" to setOf("quests", "components", "page"),
-                "quests" to setOf("quests/client"),
-                "quests/client" to setOf("quests"),
+                "lesson1hello" to setOf("page"),
+                "lesson2notice" to setOf("page"),
+                "lesson3together" to setOf("components", "page"),
+                "lesson4quests/web" to setOf("lesson4quests", "components", "page"),
+                "lesson4quests" to setOf("lesson4quests/client"),
+                "lesson4quests/client" to setOf("lesson4quests"),
                 "components" to setOf("page"),
                 "page" to emptySet(),
                 "configuration" to setOf("page"),

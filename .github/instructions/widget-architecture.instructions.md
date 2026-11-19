@@ -12,14 +12,17 @@ src/main/kotlin/forgelord/
 ├── Main.kt
 ├── configuration/                 shared Spring configuration, filters, and properties
 ├── page/                          the page root, Content, fragment { }, stylesheet(), signals by property; widget/ in widget apps
-├── hello/
-│   └── HelloController.kt         lesson 1 in one file: the page, one command, the view
-├── notice/
-│   └── NoticeController.kt        lesson 2 in one file: a list, and a command that answers with a card
-├── together/
-│   └── TogetherController.kt      lesson 3 in one file: a StateFlow, a stream, and a command that answers 204
 ├── components/                    reusable UI components, independent of any domain
-├── quests/
+├── lesson1hello/
+│   ├── HelloController.kt         lesson 1 in one file: the page, one command, the view
+│   └── HelloPage.css, HelloPageClasses.kt   the page's CSS, with no rules yet
+├── lesson2notice/
+│   ├── NoticeController.kt        lesson 2 in one file: a list, and a command that answers with a card
+│   └── NoticePage.css, NoticePageClasses.kt
+├── lesson3together/
+│   ├── TogetherController.kt      lesson 3 in one file: a StateFlow, a stream, and a command that answers 204
+│   └── TogetherPage.css, TogetherPageClasses.kt
+├── lesson4quests/                 lesson 4, the board
 │   ├── QuestService.kt            loads the board from the Ledger and keeps it as one StateFlow
 │   ├── QuestResult.kt             the board's states (Loading, Found, Empty, Unavailable), and Reading and WriteResult
 │   ├── Quest.kt                   the domain's own types
@@ -35,17 +38,19 @@ src/main/kotlin/forgelord/
 └── ledger/                        a stand-in source service, reached only over HTTP
 ```
 
+A lesson's folder has the lesson's number in its name, so the folders sort in the order the README teaches them. A page that is not a lesson is named after its domain, with no number. Lessons 1 to 3 each have a CSS file with no rules and an empty `…PageClasses` object, already passed to `page(...)` and listed in `ClassesTest`, so a reader can try a rule without setting anything up.
+
 Keep the controller and the domain's views together in `<domain>/web/`; `Controller` describes a Spring role, not a package. A source client and its DTOs belong in `client/`. The client answers in the domain's own types (`Reading`, `WriteResult`) and throws nothing: status codes, timeouts and HTTP exceptions stop there, and the service never catches one. The service loads and coordinates domain data; the controller and the views do not.
 
 Put only UI components that another page could use without changes in `components/`. Keep generic rendering and layout there; keep domain-specific labels, URLs, and formatting in `<domain>/web/`. Infrastructure that is the same for every page, such as the page root and `Content`, belongs in `page/`.
 
-Dependencies point toward the web boundary: `<domain>/web/` may use the domain service and components; the service may use the client; `components/` may use `page/`. Neither `components/` nor `page/` may depend on a domain or on `configuration/`. `configuration/` uses `page/` for one thing: in development it sets the script that reloads an open page. `quests/` never refers to `ledger/`, and `quests/` and `quests/client/` never refer to `quests/web/`. Do not move code to `components/` merely to split up a view.
+Dependencies point toward the web boundary: `<domain>/web/` may use the domain service and components; the service may use the client; `components/` may use `page/`. Neither `components/` nor `page/` may depend on a domain or on `configuration/`. `configuration/` uses `page/` for one thing: in development it sets the script that reloads an open page. `lesson4quests/` never refers to `ledger/`, and `lesson4quests/` and `lesson4quests/client/` never refer to `lesson4quests/web/`. Do not move code to `components/` merely to split up a view.
 
 Mirror production packages under `src/test/kotlin/`. Test the client against `MockRestServiceServer` (see `LedgerStub`), the service's states, the components with data unrelated to any domain, and the controller through `MockMvcTester`, reading the answer back with `datastarEvents`. `LiveBoardTest` holds a stream open on a real server.
 
 ## Enforce package boundaries with tests
 
-Package boundaries are executable rules. They are written once, as the table `MAY_USE` in `ArchitectureTest`: one row per folder, with the folders it uses. `quests`, `quests/client` and `quests/web` have a row each. The test reads the source under `src/main/kotlin/` and fails with the file and line.
+Package boundaries are executable rules. They are written once, as the table `MAY_USE` in `ArchitectureTest`: one row per folder, with the folders it uses. `lesson4quests`, `lesson4quests/client` and `lesson4quests/web` have a row each. The test reads the source under `src/main/kotlin/` and fails with the file and line.
 
 - A folder may use what its row names and nothing else. A new folder has no row, so the test fails until you add one.
 - A row names only what its folder really uses. When the last use goes, take it out of the row.

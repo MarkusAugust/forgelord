@@ -74,7 +74,7 @@ Streamlord extension is installed.
 ## Lesson 1: Hello
 
 <http://localhost:8080/hello> has one field and one button. Read
-[`hello/HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt) from top to bottom.
+[`lesson1hello/HelloController.kt`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt) from top to bottom.
 It is the whole lesson: the page, what happens when you click, and the HTML that comes back.
 
 `greet` reads the signals with `readSignalsOr(HelloSignals(), streamlord)`. It turns the JSON into
@@ -106,7 +106,7 @@ Typing sent nothing. The signal stays on the page until a request takes it along
 
 ### Kotlin in this lesson
 
-What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/hello/HelloController.kt):
+What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt):
 
 - `class HelloController(private val streamlord: Streamlord)`. The constructor is written after
   the class name, and `val` makes the parameter a property. Spring calls the constructor and passes
@@ -118,8 +118,10 @@ What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/hello/Hel
   lambda, a function without a name, that writes what goes inside the tag. It does JSX's job, in
   plain Kotlin. When a lambda is the last argument, it is written after the parentheses, as in
   `page(...) { ... }`, and when it is the only one, `()` is left out.
-- `css = ""` in `page(...)`, and `size = HeadingSize.XL`. An argument given by its name, so the
-  order does not matter and the call says what each value is.
+- `css = helloPageCss` in `page(...)`, and `size = HeadingSize.XL`. An argument given by its name,
+  so the order does not matter and the call says what each value is. `helloPageCss` is the one
+  name here that is not in this file. It is the lesson's own CSS, which has no rules yet:
+  [Try some CSS](#try-some-css), after the exercises, says where it lives.
 - `+"Hello Gallowmark"`. `+` before a string adds it as text to the tag it is in.
 - `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
   were a method on `FlowContent`, kotlinx.html's type for a tag that can hold other tags. This is
@@ -135,29 +137,42 @@ What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/hello/Hel
   the endpoint answers with HTML. The second is this request's nonce: a one-time code that lets the
   page's own scripts run under the Content-Security-Policy.
 
-### The exercises
+### How to do an exercise
 
-The exercises are tests that are switched off. Open
-[`exercises/HelloExercisesTest.kt`](src/test/kotlin/forgelord/exercises/HelloExercisesTest.kt), delete
-the `@Disabled` line above one, and run it from the green arrow beside it. It fails. Change the code
-until it passes.
+Most exercises come with a test that is switched off. You switch it on, see it fail, and change
+the code until it passes. Every exercise with a test goes the same way:
 
-The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put the cursor on it
-and press Alt+Enter (⌥↩ on a Mac) to import it.
+1. **Open the test.** The exercise has a line that starts with **Test:**. Its link opens the test.
+2. **Switch it on.** Delete the line above the test that starts with `@Disabled`.
+3. **Run it, and see it fail.** In IntelliJ IDEA, click the green arrow beside the test. From a
+   terminal, run the lesson's tests: `./gradlew test --tests '*Lesson1HelloExercisesTest'`, with
+   the name of the file the test is in.
+4. **Change the code.** The line that starts with **Where:** says in which file, and links to the
+   place.
+5. **Run it again,** until it passes. Then leave the test switched on.
 
-Each exercise says where the change goes. The link opens the file at that line, as the file is
-before any exercise is solved. Once you have added lines above it, look for the name instead.
+Each exercise says what is new in it, in a line that starts with **New here:**. If you are stuck,
+open the hint, which points the way without giving the code. The solution is folded below it. An
+exercise that says it has no test tells you what to look for in the browser instead.
+
+A solution says which imports its code needs, when it needs any that the file does not have. In
+IntelliJ IDEA you can also put the cursor on a name that has turned red and press Alt+Enter (⌥↩ on
+a Mac).
+
+The links open a file at a line, as the file is before any exercise is solved. Once you have added
+or deleted lines above it, look for the name instead.
 
 ### Exercise 1: Change the greeting
 
-Make the page greet in your own words. There is no test: you are done when the page says it.
+Make the page greet in your own words, with the name still in them. There is no test: you are done
+when the page says it.
 
-**Where:** [`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79) in `hello/HelloController.kt`.
+**Where:** [`greetingFor`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L79) in `lesson1hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
-Change the text in `greetingFor` in `HelloController.kt`, build, and reload the page. Then run the
-tests: `HelloControllerTest` checks the old words, so change them there too.
+Change the text in `greetingFor` in `HelloController.kt`, build, and reload the page. Nothing else
+has to change: the tests check that the name is in the greeting, not the words around it.
 
 </details>
 
@@ -167,8 +182,27 @@ Add a second field, "Where are you from?". "Ada" from "Hookford" gets "Hello, Ad
 with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep yours: the test
 checks only the name and the place.
 
-**Where:** `hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/hello/HelloController.kt#L75),
-[`greetingFor`](src/main/kotlin/forgelord/hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
+**New here:** a signal has to be named in every place it passes through, from the field to the
+greeting. And three cases to tell apart, where the greeting today has two.
+
+**Test:** [`the greeting says where you are from`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L24).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** `lesson1hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L75),
+[`greetingFor`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
+
+<details><summary>Hint</summary>
+
+Follow `name` through the file. It is a property of `HelloSignals`, a field in `helloForm`, an
+argument in `greet`, and a parameter of `greetingFor`. `from` goes beside it in each of the four.
+The page sends every signal it has, but the server only reads the ones `HelloSignals` has a
+property for.
+
+The greeting now has three cases: no name, a name with no place, and both. `if` with `else if`
+does it. So does `when` with nothing after it, which takes the first condition that is true:
+`when { name.isEmpty() -> "..."; else -> "..." }`, with each case on a line of its own.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -176,12 +210,19 @@ The field is a new signal, so it goes in four places: the class the server reads
 the form, and `greet`, which passes the signal on. `when` with nothing after it tries each
 condition in turn.
 
+The class `HelloSignals` and the function `greetingFor` are below the class `HelloController`.
+The first takes the place of the class, and the second of the function:
+
+<!-- solution: replace lesson1hello/HelloController.kt :: data class HelloSignals( -->
 ```kotlin
 data class HelloSignals(
     val name: String = "",
     val from: String = "",
 )
+```
 
+<!-- solution: replace lesson1hello/HelloController.kt :: fun greetingFor( -->
+```kotlin
 fun greetingFor(name: String, from: String): String =
     when {
         name.isEmpty() -> "Hello, stranger."
@@ -190,8 +231,10 @@ fun greetingFor(name: String, from: String): String =
     }
 ```
 
-In `helloForm`, before the button, a `div` of its own:
+In the function `helloForm`, a `div` of its own, after the `div` with the name field and before
+the `button`:
 
+<!-- solution: before lesson1hello/HelloController.kt :: button { -->
 ```kotlin
 div {
     val from = Lt.field(id = "from")
@@ -203,7 +246,12 @@ div {
 }
 ```
 
-And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
+And in the function `greet`, the line with `patchElements` passes both on. It becomes:
+
+<!-- solution: replace-line lesson1hello/HelloController.kt :: greeting(greetingFor(signals.name.trim())) -->
+```kotlin
+patchElements(fragment { greeting(greetingFor(signals.name.trim(), signals.from.trim())) })
+```
 
 </details>
 
@@ -212,26 +260,56 @@ And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
 Each greeting ends with its number: "Hello, Bo. Greeting number 2.". Open the page in two windows:
 they share the count.
 
-**Where:** `hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/hello/HelloController.kt#L48), and
-[`greet`](src/main/kotlin/forgelord/hello/HelloController.kt#L62).
+**New here:** something the server remembers between requests. `HelloController` is a bean: Spring
+makes one, and every request from every window goes to that one object. So a property of the class
+is shared by all of them.
+
+**Test:** [`the greetings are counted`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L35).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** `lesson1hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L48), and
+[`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
+
+<details><summary>Hint</summary>
+
+A property is declared inside the class's braces, above the functions: `private val greetings = ...`.
+
+An `Int` you add one to is nearly right. But two windows can click at the same moment, and both
+would read the same number. Java's `AtomicInteger` counts safely: `AtomicInteger()` starts at 0,
+and `incrementAndGet()` adds one and gives back the new number.
+
+Take the number in `greet`, before the stream is made, and put it in the text you pass to
+`greeting(...)`. A `$number` in a string puts the value in.
+
+</details>
 
 <details><summary>Solution</summary>
 
-The controller is one object for the whole app, so a field on it is shared by every window.
+The controller is one object for the whole app, so a property of it is shared by every window.
+It goes in the class `HelloController`, on the line above `@GetMapping("/hello", ...)`:
 
+<!-- solution: before lesson1hello/HelloController.kt :: @GetMapping("/hello" -->
 ```kotlin
 /** How many greetings, from every window. */
 private val greetings = AtomicInteger()
 ```
 
-In `greet`:
+In the function `greet`, in place of the `return response.datastarStream(...) { ... }` that ends it:
 
+<!-- solution: replace lesson1hello/HelloController.kt :: return response.datastarStream( -->
 ```kotlin
 val number = greetings.incrementAndGet()
 
 return response.datastarStream(streamlord, request = request) {
     patchElements(fragment { greeting("${greetingFor(signals.name.trim(), signals.from.trim())} Greeting number $number.") })
 }
+```
+
+It needs one import, with the others at the top of the file:
+
+<!-- solution: imports lesson1hello/HelloController.kt -->
+```kotlin
+import java.util.concurrent.atomic.AtomicInteger
 ```
 
 `AtomicInteger`, not an `Int`, because two windows can click at the same moment. If you skipped
@@ -244,12 +322,30 @@ exercise 2, call `greetingFor(signals.name.trim())` instead.
 Under the field, show what is in it, letter by letter as it is typed. The server is not asked:
 `dataText` tells Datastar to keep an element's text equal to a signal.
 
-**Where:** [`helloForm`](src/main/kotlin/forgelord/hello/HelloController.kt#L81) in `hello/HelloController.kt`.
+**New here:** something the browser does by itself, with no request. `dataText` is a Datastar
+attribute, written with Streamlord's function of the same name.
+
+**Test:** [`the page shows the name as it is typed`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L43).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) in `lesson1hello/HelloController.kt`.
+
+<details><summary>Hint</summary>
+
+A `p { }` after the `input`, inside the same `div`. In its braces, `dataText(...)` takes the
+expression the text follows.
+
+Name the signal the way `dataBind` does, by its property: `signal(HelloSignals::name)` writes the
+expression for you. Both need an import: `dataText` from Streamlord, and `signal` from
+`forgelord.page`.
+
+</details>
 
 <details><summary>Solution</summary>
 
-In `helloForm`, after the `input`:
+In the function `helloForm`, inside the `div` with the name field, after its `input { ... }`:
 
+<!-- solution: after-enclosing lesson1hello/HelloController.kt :: dataBind(HelloSignals::name) -->
 ```kotlin
 p {
     lt(Lt.paragraph())
@@ -258,6 +354,15 @@ p {
 ```
 
 `signal(HelloSignals::name)` writes `$name`, which is how Datastar refers to the signal `name`.
+
+It needs two imports. Take `signal` from `forgelord.page`: Streamlord has one with the same name,
+which takes the name as a string.
+
+<!-- solution: imports lesson1hello/HelloController.kt -->
+```kotlin
+import forgelord.page.signal
+import io.github.markusaugust.streamlord.html.dataText
+```
 
 Now break it on purpose. Write `dataText("$name")` instead. In a Kotlin string, `$name` means a
 Kotlin value called `name`, and Kotlin finds one: the `name` attribute of the `form` around the
@@ -270,10 +375,57 @@ or VS Code, the line is marked as you type it. Take both lines out again, and pu
 
 </details>
 
+### Try some CSS
+
+No exercise asks for CSS, but every lesson has a place to try it. Lesson 1's is
+[`lesson1hello/HelloPage.css`](src/main/kotlin/forgelord/lesson1hello/HelloPage.css). It is on
+the page already, and has no rules yet. A class of your own goes in three places.
+
+A constant, in [`HelloPageClasses.kt`](src/main/kotlin/forgelord/lesson1hello/HelloPageClasses.kt).
+An `object` is a class with exactly one instance, and here it only holds names. `const val` is a
+value known when the code is compiled. The object has no braces yet, so give it some:
+
+<!-- solution: replace lesson1hello/HelloPageClasses.kt :: object HelloPageClasses -->
+```kotlin
+object HelloPageClasses {
+    const val GREETING = "forgelord-hello-greeting"
+}
+```
+
+The rule, in `HelloPage.css`, inside the braces of `@layer forgelord-page`:
+
+<!-- solution: inside lesson1hello/HelloPage.css :: @layer forgelord-page { -->
+```css
+.forgelord-hello-greeting {
+  color: var(--lt-color-accent-text);
+}
+```
+
+And the class on the tag. In the function `greeting` in `HelloController.kt`, the line `p {`
+becomes:
+
+<!-- solution: replace-head lesson1hello/HelloController.kt :: id = "greeting" -->
+```kotlin
+p(HelloPageClasses.GREETING) {
+```
+
+A tag function takes the tag's class in its parentheses. Build, and the greeting has the colour.
+
+The `val helloPageCss` under the object reads the CSS file, the first time it is asked for, and
+`page(...)` puts it in the page's `<style>`. You do not have to change it.
+
+Three things to know:
+
+- `ClassesTest` fails when a class in the CSS file has no constant, or a constant no rule. So a
+  rule for one of LO-TEK's classes, such as `.lt-button`, fails it. Give the tag a class of your
+  own, as above.
+- Colours and sizes come from LO-TEK's tokens, `var(--lt-...)`, so the page follows the theme.
+- The `@layer` puts your rules after LO-TEK's, so yours win without `!important`.
+
 ## Lesson 2: A list and a command
 
 <http://localhost:8080/notice> shows three quests, each with a "Ride out" button. Read
-[`notice/NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt).
+[`lesson2notice/NoticeController.kt`](src/main/kotlin/forgelord/lesson2notice/NoticeController.kt).
 
 What is new since lesson 1: the cards come from a list, the URL says which quest was clicked, and
 the server keeps a count. Click "Ride out" and the card shows the new count.
@@ -299,7 +451,7 @@ Lesson 3 changes that.
 
 ### Kotlin in this lesson
 
-What you need to read [`NoticeController.kt`](src/main/kotlin/forgelord/notice/NoticeController.kt):
+What you need to read [`NoticeController.kt`](src/main/kotlin/forgelord/lesson2notice/NoticeController.kt):
 
 - `val NOTICES = listOf(...)`. A list that cannot be changed. It is declared outside the class, so
   it is one list for the whole app.
@@ -317,21 +469,50 @@ What you need to read [`NoticeController.kt`](src/main/kotlin/forgelord/notice/N
 - `"notice-${notice.id}"`. `${...}` is needed when what goes in the string is more than a plain
   name, such as `notice.id`.
 
+To try some CSS here, the file is
+[`lesson2notice/NoticePage.css`](src/main/kotlin/forgelord/lesson2notice/NoticePage.css), with
+`NoticePageClasses` beside it. It works as in [lesson 1](#try-some-css).
+
 ### Exercise 5: A badge for a popular quest
 
-When three or more have ridden out on a quest, its card shows a badge that says "Popular". The
-test is in [`exercises/NoticeExercisesTest.kt`](src/test/kotlin/forgelord/exercises/NoticeExercisesTest.kt).
+When three or more have ridden out on a quest, its card shows a badge that says "Popular".
 
-**Where:** [`noticeCard`](src/main/kotlin/forgelord/notice/NoticeController.kt#L101) in `notice/NoticeController.kt`.
+**New here:** markup that depends on a value. Inside a tag's braces you are in ordinary Kotlin, so
+an `if` decides whether a tag is written. And a new part of LO-TEK, the badge.
+
+**Test:** [`a quest three have ridden out on gets a badge`](src/test/kotlin/forgelord/exercises/Lesson2NoticeExercisesTest.kt#L22).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** [`noticeCard`](src/main/kotlin/forgelord/lesson2notice/NoticeController.kt#L101) in `lesson2notice/NoticeController.kt`.
+
+<details><summary>Hint</summary>
+
+`noticeCard` already gets `riders`, the count, as a parameter. After the paragraph that shows the
+count, write an `if (riders >= 3) { ... }` with a `span { }` in it.
+
+LO-TEK's badge goes on the `span` as its button goes on a `button`: `lt(Lt.badge(...))`. The text
+goes in with `+`.
+
+</details>
 
 <details><summary>Solution</summary>
 
-In `noticeCard`, after the paragraph with the count:
+In the function `noticeCard`, between the paragraph that shows `ridersText(riders)` and the
+`button`:
 
+<!-- solution: after lesson2notice/NoticeController.kt :: +ridersText(riders) -->
 ```kotlin
 if (riders >= 3) {
     span { lt(Lt.badge(color = BadgeColor.SUCCESS)); +"Popular" }
 }
+```
+
+It needs two imports, with the others at the top of the file:
+
+<!-- solution: imports lesson2notice/NoticeController.kt -->
+```kotlin
+import kotlinx.html.span
+import no.lotek.BadgeColor
 ```
 
 Only the card changes. The count was already there: `riders` is the card's parameter.
@@ -342,7 +523,7 @@ Only the card changes. The count was already there: `riders` is the card's param
 
 <http://localhost:8080/together> is lesson 2's list again. Open it in two windows and ride out in
 one: both show the new count. Read
-[`together/TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt), and
+[`lesson3together/TogetherController.kt`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt), and
 compare it with lesson 2's.
 
 What changed:
@@ -376,7 +557,7 @@ click itself is one POST with an empty answer.
 
 ### Kotlin in this lesson
 
-What you need to read [`TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt):
+What you need to read [`TogetherController.kt`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt):
 
 - `MutableStateFlow(...)`, `riders.value` and `riders.update { ... }`. From kotlinx.coroutines.
   `value` is what the flow holds now, and `update` replaces it. You write no coroutine code here:
@@ -392,14 +573,23 @@ What you need to read [`TogetherController.kt`](src/main/kotlin/forgelord/togeth
   of `it`.
 - `const val TOGETHER_BOARD_ID`. A constant, known when the code is compiled.
 
+To try some CSS here, the file is
+[`lesson3together/TogetherPage.css`](src/main/kotlin/forgelord/lesson3together/TogetherPage.css),
+with `TogetherPageClasses` beside it. It works as in [lesson 1](#try-some-css).
+
 ### Exercise 6: Turn back
 
 A "Turn back" button beside "Ride out" takes one rider off the quest, never below none, and every
-open window shows the new count. The test is in
-[`exercises/TogetherExercisesTest.kt`](src/test/kotlin/forgelord/exercises/TogetherExercisesTest.kt).
+open window shows the new count.
 
-**Where:** `together/TogetherController.kt`: a new command beside [`rideOut`](src/main/kotlin/forgelord/together/TogetherController.kt#L119), and a
-button in [`cards`](src/main/kotlin/forgelord/together/TogetherController.kt#L148).
+**New here:** a second command on a page that has a stream. The command changes the state and
+sends no HTML.
+
+**Test:** [`a rider can turn back, but riders never go below none`](src/test/kotlin/forgelord/exercises/Lesson3TogetherExercisesTest.kt#L24).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** `lesson3together/TogetherController.kt`: a new command beside [`rideOut`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L119), and a
+button in [`cards`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L148).
 
 <details><summary>Hint</summary>
 
@@ -410,8 +600,10 @@ stream does that, for every window. What differs here is the URL, and what happe
 
 <details><summary>Solution</summary>
 
-A second command beside `rideOut`:
+A second command in the class `TogetherController`, after the function `rideOut` and before the
+brace that closes the class:
 
+<!-- solution: after lesson3together/TogetherController.kt :: fun rideOut( -->
 ```kotlin
 @PostMapping("/together/{id}/turn-back")
 @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -426,8 +618,10 @@ fun turnBack(
 }
 ```
 
-And in `cards`, at the bottom of the file, after the "Ride out" button:
+And in the function `cards`, near the bottom of the file, after the `button { ... }` that says
+"Ride out", inside the same braces:
 
+<!-- solution: after-enclosing lesson3together/TogetherController.kt :: +"Ride out" -->
 ```kotlin
 button {
     lt(Lt.button(variant = ButtonVariant.GHOST))
@@ -447,7 +641,9 @@ In `board`, change `ElementPatchMode.INNER` to `ElementPatchMode.REPLACE`. Build
 with the Network tab open, and ride out. There is no test: you are done when you can say what
 became of the stream, and `INNER` is back.
 
-**Where:** [`board`](src/main/kotlin/forgelord/together/TogetherController.kt#L107) in `together/TogetherController.kt`.
+**New here:** what keeps a stream open: the element that opened it.
+
+**Where:** [`board`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L107) in `lesson3together/TogetherController.kt`.
 
 <details><summary>Solution</summary>
 
@@ -472,8 +668,8 @@ What is new: the board reads its quests from the Ledger, a separate service it c
 Here the Ledger runs in the same app, at <http://localhost:8080/ledger>, where you can open it,
 wipe it or close it.
 
-**If you come from React.** The folders are ones you know by other names. `quests/client/` is
-the API client, `QuestService` is the store, and `quests/web/` has the route handlers and the
+**If you come from React.** The folders are ones you know by other names. `lesson4quests/client/` is
+the API client, `QuestService` is the store, and `lesson4quests/web/` has the route handlers and the
 components. `QuestResult` is the union of loading, data, empty and error that you would write in
 TypeScript.
 
@@ -481,23 +677,23 @@ The page, the stream and the commands work as in lesson 3. But lesson 3 was one 
 board is several folders. So this lesson comes in four steps. Each step names the few files it is
 about, and ends with an exercise. The first three say what Kotlin is new in their files. The
 exercises are in
-[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
+[`exercises/Lesson4QuestsExercisesTest.kt`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt).
 
 ### Where the code is
 
 This is a map to look things up in. You need none of it by heart: each step says where to read.
-Each box is a folder under `src/main/kotlin/forgelord/`, and an arrow means "uses": `quests/web`
-imports from `components`.
+Each box is a folder under `src/main/kotlin/forgelord/`, and an arrow means "uses":
+`lesson4quests/web` imports from `components`.
 
 ```mermaid
 flowchart TD
     subgraph app ["The app"]
-        hello["hello"]
-        notice["notice"]
-        together["together"]
-        web["quests/web"]
-        quests["quests"]
-        client["quests/client"]
+        hello["lesson1hello"]
+        notice["lesson2notice"]
+        together["lesson3together"]
+        web["lesson4quests/web"]
+        quests["lesson4quests"]
+        client["lesson4quests/client"]
         components["components"]
         page["page"]
         configuration["configuration"]
@@ -520,12 +716,13 @@ flowchart TD
     ledger --> page
 ```
 
-Each lesson's folder uses only `page/` and `components/`, never another lesson's. `page/` uses
+A lesson's folder has the lesson's number in its name, so the folders sort in the order you read
+them. Each one uses only `page/` and `components/`, never another lesson's. `page/` uses
 none of the others, and `components/` knows nothing of quests, so both can go into
 another app as they are. Nothing in the app imports `ledger/`: the board reaches it over HTTP, the
 way it would reach a real service. It runs in the same app only so there is one thing to start.
-`quests` and `quests/client` use each other, since the service calls the client and the client
-turns the Ledger's JSON into the board's own types.
+`lesson4quests` and `lesson4quests/client` use each other, since the service calls the client and
+the client turns the Ledger's JSON into the board's own types.
 `configuration/` sets up Streamlord, the Content-Security-Policy, the Ledger's address and the
 scope the board asks the Ledger in, and Spring hands them to the rest. In development it also
 gives `page/` the script that reloads an open page.
@@ -534,19 +731,19 @@ gives `page/` the script that reloads an open page.
 src/
 ├── main/
 │   ├── kotlin/forgelord/
-│   │   ├── hello/          Lesson 1, in one file
-│   │   ├── notice/         Lesson 2, in one file
-│   │   ├── together/       Lesson 3, in one file
-│   │   ├── quests/         the board's types, and the service that reads them
-│   │   │   ├── web/        the controller, the views and the form's rules
-│   │   │   └── client/     the Ledger over HTTP
-│   │   ├── components/     what every page can use: field, card list, toast and more
-│   │   ├── page/           the page around everything: LO-TEK, the CSS, the scripts, signals by property
-│   │   ├── configuration/  Streamlord, the Content-Security-Policy, the Ledger's address, the scope, reloading in development
-│   │   └── ledger/         the stand-in for a real source service
-│   └── resources/static/   datastar.js, forgelord.js, which loads LO-TEK, and development-reload.js
+│   │   ├── lesson1hello/     Lesson 1: one Kotlin file to read, and a CSS file to try things in
+│   │   ├── lesson2notice/    Lesson 2, the same
+│   │   ├── lesson3together/  Lesson 3, the same
+│   │   ├── lesson4quests/    Lesson 4: the board's types, and the service that reads them
+│   │   │   ├── web/          the controller, the views and the form's rules
+│   │   │   └── client/       the Ledger over HTTP
+│   │   ├── components/       what every page can use: field, card list, toast and more
+│   │   ├── page/             the page around everything: LO-TEK, the CSS, the scripts, signals by property
+│   │   ├── configuration/    Streamlord, the Content-Security-Policy, the Ledger's address, the scope, reloading in development
+│   │   └── ledger/           the stand-in for a real source service
+│   └── resources/static/     datastar.js, forgelord.js, which loads LO-TEK, and development-reload.js
 └── test/kotlin/forgelord/
-    └── exercises/          the exercises, switched off
+    └── exercises/            the exercises, switched off, one file for each lesson
 ```
 
 ### Step 1: Read from another service
@@ -559,11 +756,11 @@ Read these, in this order:
 
 | Where | What |
 | --- | --- |
-| [`quests/QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt) | `QuestResult`: the four states. `Reading`: what the Ledger answered |
-| `quests` in [`quests/client/QuestClient.kt`](src/main/kotlin/forgelord/quests/client/QuestClient.kt) | Asks the Ledger over HTTP, and turns its JSON into the board's own `Quest`. It never throws: a Ledger that fails is `Reading.Closed` |
-| [`quests/QuestService.kt`](src/main/kotlin/forgelord/quests/QuestService.kt) | `board` is a `StateFlow`, as `riders` was in lesson 3, but filled by asking the Ledger |
-| `boardView` in [`quests/web/QuestView.kt`](src/main/kotlin/forgelord/quests/web/QuestView.kt) | One rendering for each of the four states |
-| `board` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The stream. It is lesson 3's, with `quests.board` in place of `riders` |
+| [`lesson4quests/QuestResult.kt`](src/main/kotlin/forgelord/lesson4quests/QuestResult.kt) | `QuestResult`: the four states. `Reading`: what the Ledger answered |
+| `quests` in [`lesson4quests/client/QuestClient.kt`](src/main/kotlin/forgelord/lesson4quests/client/QuestClient.kt) | Asks the Ledger over HTTP, and turns its JSON into the board's own `Quest`. It never throws: a Ledger that fails is `Reading.Closed` |
+| [`lesson4quests/QuestService.kt`](src/main/kotlin/forgelord/lesson4quests/QuestService.kt) | `board` is a `StateFlow`, as `riders` was in lesson 3, but filled by asking the Ledger |
+| `boardView` in [`lesson4quests/web/QuestView.kt`](src/main/kotlin/forgelord/lesson4quests/web/QuestView.kt) | One rendering for each of the four states |
+| `board` in [`lesson4quests/web/ViewController.kt`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt) | The stream. It is lesson 3's, with `quests.board` in place of `riders` |
 
 The board asks the Ledger again every two seconds while any window has it open, and a Ledger that
 takes more than two seconds to answer counts as closed.
@@ -607,11 +804,11 @@ one click, from the button to the Ledger:
 
 | Where | What |
 | --- | --- |
-| `questCard` in [`quests/web/QuestView.kt`](src/main/kotlin/forgelord/quests/web/QuestView.kt) | The button. It posts to `/quests/{id}/ride` |
-| `rideOut` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The command. 204 when it went through, and a toast for the one who clicked when it did not |
-| `rideOut` in [`quests/QuestService.kt`](src/main/kotlin/forgelord/quests/QuestService.kt) | Hands the ride to the client, and reads the board again |
-| `rideOut` and `write` in [`quests/client/QuestClient.kt`](src/main/kotlin/forgelord/quests/client/QuestClient.kt) | The request to the Ledger, and its status code turned into a `WriteResult` |
-| `WriteResult` in [`quests/QuestResult.kt`](src/main/kotlin/forgelord/quests/QuestResult.kt) | What became of a write: `DONE`, `CLOSED` or `GONE` |
+| `questCard` in [`lesson4quests/web/QuestView.kt`](src/main/kotlin/forgelord/lesson4quests/web/QuestView.kt) | The button. It posts to `/quests/{id}/ride` |
+| `rideOut` in [`lesson4quests/web/ViewController.kt`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt) | The command. 204 when it went through, and a toast for the one who clicked when it did not |
+| `rideOut` in [`lesson4quests/QuestService.kt`](src/main/kotlin/forgelord/lesson4quests/QuestService.kt) | Hands the ride to the client, and reads the board again |
+| `rideOut` and `write` in [`lesson4quests/client/QuestClient.kt`](src/main/kotlin/forgelord/lesson4quests/client/QuestClient.kt) | The request to the Ledger, and its status code turned into a `WriteResult` |
+| `WriteResult` in [`lesson4quests/QuestResult.kt`](src/main/kotlin/forgelord/lesson4quests/QuestResult.kt) | What became of a write: `DONE`, `CLOSED` or `GONE` |
 
 Each one calls only the next. The button knows a URL. The controller calls the service. The
 service calls the client. Only the client knows that the Ledger speaks HTTP. What they share is
@@ -630,7 +827,7 @@ Kotlin in this step:
   function, so after the `when`, `why` is always a text.
 - `QuestPageClasses.CARD_FOOTER` in `questCard`. `QuestPageClasses` is an `object`, a class with
   exactly one instance, in
-  [`QuestPageClasses.kt`](src/main/kotlin/forgelord/quests/web/QuestPageClasses.kt). It holds the
+  [`QuestPageClasses.kt`](src/main/kotlin/forgelord/lesson4quests/web/QuestPageClasses.kt). It holds the
   page's CSS class names.
 - `catch (_: HttpClientErrorException.NotFound)` in `QuestClient.write`. The Ledger's 404, caught
   by its type and turned into `GONE`. `_` in place of a name says the exception is not used.
@@ -641,16 +838,21 @@ Exercise 6 again, on the board: a "Turn back" button beside "Ride out" takes one
 quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do it:
 `DELETE /ledger/quests/{id}/riders` answers as a ride does, and never goes below none. The board
 does not ask for it yet. When the Ledger does not take it, the one who clicked gets the toast a
-ride gives, ending "Nobody turned back." The test is in
-[`exercises/BoardExercisesTest.kt`](src/test/kotlin/forgelord/exercises/BoardExercisesTest.kt).
+ride gives, ending "Nobody turned back."
+
+**New here:** one change that goes through every layer of the board: the client, the service,
+the controller and the view.
+
+**Test:** [`a rider can turn back on the board`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L39).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** four files, from the client to the page. In each, the new code goes beside what "Ride
 out" has there:
 
-1. [`rideOut`](src/main/kotlin/forgelord/quests/client/QuestClient.kt#L54) in `quests/client/QuestClient.kt`
-2. [`rideOut`](src/main/kotlin/forgelord/quests/QuestService.kt#L48) in `quests/QuestService.kt`
-3. [`rideOut`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L100) in `quests/web/ViewController.kt`
-4. [`questCard`](src/main/kotlin/forgelord/quests/web/QuestView.kt#L92) in `quests/web/QuestView.kt`
+1. [`rideOut`](src/main/kotlin/forgelord/lesson4quests/client/QuestClient.kt#L54) in `lesson4quests/client/QuestClient.kt`
+2. [`rideOut`](src/main/kotlin/forgelord/lesson4quests/QuestService.kt#L48) in `lesson4quests/QuestService.kt`
+3. [`rideOut`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt#L100) in `lesson4quests/web/ViewController.kt`
+4. [`questCard`](src/main/kotlin/forgelord/lesson4quests/web/QuestView.kt#L92) in `lesson4quests/web/QuestView.kt`
 
 <details><summary>Hint</summary>
 
@@ -665,9 +867,10 @@ is fine.
 
 <details><summary>Solution</summary>
 
-In `QuestClient`, beside `rideOut`. `write` already turns the Ledger's status codes into a
-`WriteResult`:
+In the class `QuestClient`, after the function `rideOut`. `write` already turns the Ledger's
+status codes into a `WriteResult`:
 
+<!-- solution: after lesson4quests/client/QuestClient.kt :: fun rideOut( -->
 ```kotlin
 fun turnBack(id: String): WriteResult =
     write {
@@ -679,14 +882,17 @@ fun turnBack(id: String): WriteResult =
     }
 ```
 
-In `QuestService`, beside `rideOut`:
+In the class `QuestService`, after the function `rideOut`:
 
+<!-- solution: after lesson4quests/QuestService.kt :: fun rideOut( -->
 ```kotlin
 fun turnBack(id: String): WriteResult = client.turnBack(id).also { readAgain() }
 ```
 
-In `ViewController`, after `rideOut`. It is `rideOut` again, with another URL and other words:
+In the class `ViewController`, after the function `rideOut`. It is `rideOut` again, with another
+URL and other words:
 
+<!-- solution: after lesson4quests/web/ViewController.kt :: fun rideOut( -->
 ```kotlin
 @PostMapping("/quests/{id}/turn-back")
 fun turnBack(
@@ -711,8 +917,10 @@ fun turnBack(
 }
 ```
 
-And in `questCard` in `QuestView.kt`, after the "Ride out" button:
+And in the function `questCard` in `QuestView.kt`, after the `button { ... }` that says "Ride
+out", inside the same `div`:
 
+<!-- solution: after-enclosing lesson4quests/web/QuestView.kt :: +"Ride out" -->
 ```kotlin
 button {
     lt(Lt.button(variant = ButtonVariant.GHOST))
@@ -736,10 +944,10 @@ Datastar morphs it in, so the fields keep what was typed.
 
 | Where | What |
 | --- | --- |
-| [`quests/web/QuestForm.kt`](src/main/kotlin/forgelord/quests/web/QuestForm.kt) | The form's signals, and `check`: the rules for a new quest, on the server and nowhere else |
-| [`quests/web/QuestFormView.kt`](src/main/kotlin/forgelord/quests/web/QuestFormView.kt) | The HTML of the form, with the server's verdict on each field |
-| `nail` in [`quests/web/ViewController.kt`](src/main/kotlin/forgelord/quests/web/ViewController.kt) | The command. Unlike a ride, it answers with HTML: the form again |
-| [`quests/Quest.kt`](src/main/kotlin/forgelord/quests/Quest.kt) | `NewQuest`: a quest that has passed the rules. Only `check` can make one |
+| [`lesson4quests/web/QuestForm.kt`](src/main/kotlin/forgelord/lesson4quests/web/QuestForm.kt) | The form's signals, and `check`: the rules for a new quest, on the server and nowhere else |
+| [`lesson4quests/web/QuestFormView.kt`](src/main/kotlin/forgelord/lesson4quests/web/QuestFormView.kt) | The HTML of the form, with the server's verdict on each field |
+| `nail` in [`lesson4quests/web/ViewController.kt`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt) | The command. Unlike a ride, it answers with HTML: the form again |
+| [`lesson4quests/Quest.kt`](src/main/kotlin/forgelord/lesson4quests/Quest.kt) | `NewQuest`: a quest that has passed the rules. Only `check` can make one |
 
 Kotlin in this step:
 
@@ -752,23 +960,45 @@ Kotlin in this step:
   every call to `of` a compile error until the caller writes `@OptIn(PassedTheRules::class)`, as
   `QuestForm.check` does.
 
+The board has CSS of its own already, in
+[`lesson4quests/web/QuestPage.css`](src/main/kotlin/forgelord/lesson4quests/web/QuestPage.css),
+with `QuestPageClasses` beside it. Try a rule there as in [lesson 1](#try-some-css).
+
 ### Exercise 10: Keep the task short
 
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
 
-**Where:** [`check`](src/main/kotlin/forgelord/quests/web/QuestForm.kt#L57) in `quests/web/QuestForm.kt`. No other file
+**New here:** a rule of the form's. The server decides what is valid, and a `Fault` says which
+field it is about.
+
+**Test:** [`what has to be done fits in 300 characters`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L63).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** [`check`](src/main/kotlin/forgelord/lesson4quests/web/QuestForm.kt#L57) in `lesson4quests/web/QuestForm.kt`. No other file
 changes.
+
+<details><summary>Hint</summary>
+
+`check` makes a list of faults, with one `add(Fault(...))` for each thing that is wrong. The text
+has one rule today: it must not be empty. Look at how the name has two rules, empty and too long,
+in one `when`. Only the first that is true adds its fault, so a field never gets two.
+
+The limits are constants above `check`. Add one for 300.
+
+</details>
 
 <details><summary>Solution</summary>
 
-Beside the other limits:
+In `QuestForm.kt`, on the line after `private const val REWARD_MAX = 1000`:
 
+<!-- solution: after lesson4quests/web/QuestForm.kt :: private const val REWARD_MAX -->
 ```kotlin
 private const val TEXT_MAX = 300
 ```
 
-In `check`, in place of the line that checks `trimmedText`:
+In the function `check`, in place of the line that starts with `if (trimmedText.isEmpty())`:
 
+<!-- solution: replace lesson4quests/web/QuestForm.kt :: if (trimmedText.isEmpty()) -->
 ```kotlin
 when {
     trimmedText.isEmpty() -> add(Fault(QuestForm::text, "Say what has to be done."))
@@ -796,14 +1026,20 @@ Nailing up a quest with the name of one already on the post shows "<the name> is
 post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
 is the same name as "A Tenth of the Wood".
 
+**New here:** a rule only the source can check. The board does not know which names are taken, so
+the Ledger refuses, and the refusal comes back to the page as a new `WriteResult`.
+
+**Test:** [`a quest cannot take the name of one already on the post`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L73).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
 **Where:** five files, from the Ledger to the page. Take them in this order:
 
 1. [`Ledger`](src/main/kotlin/forgelord/ledger/Ledger.kt#L34) in `ledger/Ledger.kt`
 2. [`add`](src/main/kotlin/forgelord/ledger/LedgerController.kt#L36) in `ledger/LedgerController.kt`
-3. [`WriteResult`](src/main/kotlin/forgelord/quests/QuestResult.kt#L35) in `quests/QuestResult.kt`
-4. [`write`](src/main/kotlin/forgelord/quests/client/QuestClient.kt#L64) in `quests/client/QuestClient.kt`
-5. [`nail`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L70) and [`rideOut`](src/main/kotlin/forgelord/quests/web/ViewController.kt#L100)
-   in `quests/web/ViewController.kt`
+3. [`WriteResult`](src/main/kotlin/forgelord/lesson4quests/QuestResult.kt#L35) in `lesson4quests/QuestResult.kt`
+4. [`write`](src/main/kotlin/forgelord/lesson4quests/client/QuestClient.kt#L64) in `lesson4quests/client/QuestClient.kt`
+5. [`nail`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt#L70) and [`rideOut`](src/main/kotlin/forgelord/lesson4quests/web/ViewController.kt#L100)
+   in `lesson4quests/web/ViewController.kt`
 
 <details><summary>Hint</summary>
 
@@ -823,33 +1059,51 @@ The Ledger owns the quests, so the Ledger refuses the name, with `409 Conflict`.
 checked first, two people could still nail up the same name at the same moment, between the
 board's check and the Ledger's write.
 
-In `Ledger.kt`:
+In the class `Ledger` in `Ledger.kt`, above the `@Synchronized` that stands over the function
+`add`:
 
+<!-- solution: before ledger/Ledger.kt :: fun add(entry -->
 ```kotlin
 @Synchronized
 fun has(title: String): Boolean = !closed && entries.any { it.title.equals(title, ignoreCase = true) }
 ```
 
-In `LedgerController.add`:
+In the class `LedgerController`, the whole function `add`, with the `@PostMapping` line above it,
+becomes:
 
+<!-- solution: replace ledger/LedgerController.kt :: fun add( -->
 ```kotlin
-synchronized(ledger) {
-    if (ledger.has(entry.title)) {
-        ResponseEntity.status(HttpStatus.CONFLICT).build()
-    } else {
-        ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
-            ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+@PostMapping("/ledger/quests")
+fun add(
+    @RequestBody entry: NewLedgerEntry,
+): ResponseEntity<LedgerEntry> =
+    synchronized(ledger) {
+        if (ledger.has(entry.title)) {
+            ResponseEntity.status(HttpStatus.CONFLICT).build()
+        } else {
+            ledger.add(entry)?.let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
+                ?: ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+        }
     }
-}
 ```
 
 `has` and `add` each lock the Ledger, but one at a time. `synchronized(ledger)` holds the same
 lock over both, so nobody adds the name between the check and the write.
 
-Add `TAKEN` to `WriteResult` in `QuestResult.kt`. The client is where a status code becomes one
-of the board's words, so in `QuestClient.write`, catch the conflict before `Exception`. `Conflict`
-is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
+In the enum `WriteResult` in `QuestResult.kt`, after `GONE,`:
 
+<!-- solution: after lesson4quests/QuestResult.kt :: enum class WriteResult >> GONE, -->
+```kotlin
+/** The Ledger has a quest with that name already. Nothing changed. */
+TAKEN,
+```
+
+The client is where a status code becomes one of the board's words. So in the function `write` in
+`QuestClient.kt`, catch the conflict before `Exception`. `Conflict` is a kind of `Exception`, and
+Kotlin uses the first `catch` that matches. These three lines take the place of the line
+`} catch (e: Exception) {`:
+
+<!-- solution: replace lesson4quests/client/QuestClient.kt :: fun write( >> } catch (e: Exception) { -->
 ```kotlin
 } catch (_: HttpClientErrorException.Conflict) {
     WriteResult.TAKEN
@@ -859,15 +1113,20 @@ is a kind of `Exception`, and Kotlin uses the first `catch` that matches:
 `QuestService` hands the result on as it is, and needs no change.
 
 Now build. The build fails twice in `ViewController`: neither `when` over the result covers every
-case any more. In `nail`, add the branch:
+case any more. In the function `nail`, in the `when (quests.nail(checked.quest))`, add a branch
+last, after the `executeScript(...)` line of the branch for `WriteResult.CLOSED, WriteResult.GONE`:
 
+<!-- solution: after lesson4quests/web/ViewController.kt :: fun nail( >> WriteResult.CLOSED, WriteResult.GONE -> -->
 ```kotlin
 WriteResult.TAKEN ->
     patchElements(fragment { questForm(emptySignals, listOf(Fault(QuestForm::name, "${checked.quest.name} is already on the post."))) })
 ```
 
-A ride is never `TAKEN`, so in `rideOut` it joins the branch that says the least:
+A ride is never `TAKEN`, so in the function `rideOut` it joins the branch that says the least. In
+place of the line that starts with `WriteResult.CLOSED ->`:
 
+<!-- solution: replace lesson4quests/web/ViewController.kt :: fun rideOut( >> WriteResult.CLOSED -> -->
+<!-- solution: replace lesson4quests/web/ViewController.kt :: fun turnBack( >> WriteResult.CLOSED -> -->
 ```kotlin
 WriteResult.CLOSED, WriteResult.TAKEN -> "The Ledger did not take it."
 ```
@@ -885,35 +1144,37 @@ field, one button, and a list that every open window sees.
 ### The recipe
 
 Every page in this app is made the same way. Lesson 3's file has most of it in one place, so keep
-[`together/TogetherController.kt`](src/main/kotlin/forgelord/together/TogetherController.kt) open.
+[`lesson3together/TogetherController.kt`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt) open.
 
 1. **A folder.** `src/main/kotlin/forgelord/<name>/`, with one file for the controller. One file is
-   enough until the page reads from another service. Then split it the way `quests/` is split.
+   enough until the page reads from another service. Then split it the way `lesson4quests/` is
+   split. In your own app the folder is named after what the page is about, with no number.
 2. **A row and a box.** A new folder can use nothing until `MAY_USE` in `ArchitectureTest` has a
    row for it. The diagram and the tree in lesson 4 get the folder too, and the diagram gets the
    row's arrows. `./gradlew test` says what is missing.
 3. **The page.** A `@RestController` that takes `Streamlord` in its constructor, with a
    `@GetMapping` that returns `page(title, request.cspNonce, css) { ... }`, as
-   [`page`](src/main/kotlin/forgelord/together/TogetherController.kt#L77) does.
+   [`page`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L77) does.
 4. **The state.** What the page shows, in one `MutableStateFlow`.
 5. **The stream.** On the page, an element with an id and `dataInit(get(...))`. On the server, an
    endpoint that sends the state with `sendLatest`, `INNER` into that element, as
-   [`board`](src/main/kotlin/forgelord/together/TogetherController.kt#L107) does.
+   [`board`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L107) does.
 6. **A command.** A `@PostMapping` that reads the signals, changes the state and answers 204, as
-   [`rideOut`](src/main/kotlin/forgelord/together/TogetherController.kt#L119) does. When it needs
+   [`rideOut`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L119) does. When it needs
    what the user typed, the signals get a data class, and the field gets `dataBind`, as in lesson 1.
 7. **The tests.** A test class in the same folder under `src/test/kotlin/forgelord/`, like
-   [`TogetherControllerTest`](src/test/kotlin/forgelord/together/TogetherControllerTest.kt). The
+   [`TogetherControllerTest`](src/test/kotlin/forgelord/lesson3together/TogetherControllerTest.kt). The
    page's path also goes in the list in `ContentSecurityPolicyTest`. No test asks for that line: it
    is what puts your page under the test.
-8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it, and a line in
-   `ClassesTest`, as `quests/web/` has.
+8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it with the `val` that
+   reads the file, that `val` passed to `page(...)`, and a line in `ClassesTest`. Lessons 1 to 3
+   have all four, with no rules yet: copy `HelloPage.css` and `HelloPageClasses.kt`, give them
+   your page's name, and change the path in `stylesheet(...)` to the new file. With the old path
+   the page gets lesson 1's CSS, and no test says so.
 
 ### Exercise 12: The watch
 
-The test is in
-[`exercises/WatchExercisesTest.kt`](src/test/kotlin/forgelord/exercises/WatchExercisesTest.kt).
-It knows your page only by its URLs, and asks a running server for them:
+The test knows your page only by its URLs, and asks a running server for them:
 
 - `GET /watch` is the page. It has an element with the id `watch-list`, and that element opens the
   stream.
@@ -921,21 +1182,25 @@ It knows your page only by its URLs, and asks a running server for them:
 - `POST /watch` is the command. It reads the signal `name`, puts the name on the watch, and
   answers 204.
 
-The names live in the controller, as the count does in lesson 3. Remove `@Disabled`, run the test,
-and build the page until it passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment
-the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
+The names live in the controller, as the count does in lesson 3. Build the page until the test
+passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
 of your own, point 7.
 
-**Where:** a new folder, `src/main/kotlin/forgelord/watch/`. A row in
-[`MAY_USE`](src/test/kotlin/forgelord/ArchitectureTest.kt#L50). A box, an arrow and a line in
+**New here:** nothing. Every part is from lessons 1 to 4, and this time you choose where it goes.
+
+**Test:** [`a name put on the watch reaches every open window`](src/test/kotlin/forgelord/exercises/Lesson5WatchExercisesTest.kt#L34).
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
+
+**Where:** a new folder, `src/main/kotlin/forgelord/lesson5watch/`. A row in
+[`MAY_USE`](src/test/kotlin/forgelord/ArchitectureTest.kt#L51). A box, an arrow and a line in
 [Where the code is](#where-the-code-is).
 
 <details><summary>Checklist</summary>
 
-- [ ] `watch/WatchController.kt` has a `@RestController` that takes `Streamlord`.
-- [ ] `MAY_USE` has the row `"watch" to setOf("page")`.
-- [ ] The diagram has the box `watch["watch"]` and the arrow `watch --> page`. The tree has a line
-      for `watch/`.
+- [ ] `lesson5watch/WatchController.kt` has a `@RestController` that takes `Streamlord`.
+- [ ] `MAY_USE` has the row `"lesson5watch" to setOf("page")`.
+- [ ] The diagram has the box `watch["lesson5watch"]` and the arrow `watch --> page`. The tree has
+      a line for `lesson5watch/`.
 - [ ] If you use a component: `"components"` in the row, and the arrow `watch --> components`.
 - [ ] The names are in a `MutableStateFlow(emptyList<String>())`.
 - [ ] `GET /watch` returns `page(...)`, with an element that has the id `watch-list` and
@@ -951,10 +1216,11 @@ of your own, point 7.
 
 <details><summary>Solution</summary>
 
-The whole page, in `src/main/kotlin/forgelord/watch/WatchController.kt`:
+The whole page, in `src/main/kotlin/forgelord/lesson5watch/WatchController.kt`:
 
+<!-- solution: new-file lesson5watch/WatchController.kt -->
 ```kotlin
-package forgelord.watch
+package forgelord.lesson5watch
 
 import forgelord.page.dataBind
 import forgelord.page.fragment
@@ -1088,19 +1354,41 @@ private fun FlowContent.watchList(names: List<String>) {
 
 In `ArchitectureTest`, a row in `MAY_USE`:
 
+<!-- solution: after src/test/kotlin/forgelord/ArchitectureTest.kt :: "lesson3together" to setOf( -->
 ```kotlin
-"watch" to setOf("page"),
+"lesson5watch" to setOf("page"),
 ```
 
-In this README, under "Where the code is": a box and an arrow in the diagram, and a line in the tree.
+In this README, under "Where the code is", three lines. In the diagram, the box, on the line
+after `together["lesson3together"]`:
 
+<!-- solution: after README.md :: ### Where the code is >> together["lesson3together"] -->
 ```text
-        watch["watch"]
-    watch --> page
-│   │   ├── watch/          Lesson 5, your own page
+        watch["lesson5watch"]
 ```
 
-And `"/watch"` in the list of paths in `ContentSecurityPolicyTest`.
+In the diagram, the arrow, on the line after `together --> page`:
+
+<!-- solution: after README.md :: ### Where the code is >> together --&gt; page -->
+```text
+    watch --> page
+```
+
+In the tree, on the line after the one for `lesson3together/`, with the same marks in front:
+
+<!-- solution: after README.md :: ### Where the code is >> ├── lesson3together/ -->
+```text
+│   │   ├── lesson5watch/     Lesson 5: your own page
+```
+
+And `"/watch"` in the list of paths in
+`src/test/kotlin/forgelord/configuration/ContentSecurityPolicyTest.kt`, after `"/together"`. The
+line with the list becomes:
+
+<!-- solution: replace-line src/test/kotlin/forgelord/configuration/ContentSecurityPolicyTest.kt :: for (path in listOf( -->
+```kotlin
+for (path in listOf("/", "/hello", "/notice", "/together", "/watch", "/ledger")) {
+```
 
 The field keeps the name after you click. To empty it, the command answers with `patchSignals`
 instead of 204, as the board's form does when a quest is nailed up.
@@ -1134,9 +1422,18 @@ once, for the page's CSS. Eight tests hold the structure:
 - `NewQuestTest` checks that only the file with the form's rules opts in to making a `NewQuest`.
 - `InstructionsTest` checks that `CLAUDE.md` imports every instruction file.
 - `ReadmeTest` checks that the diagram and the tree in lesson 4 name every folder, and that the
-  diagram's arrows are the ones in `ArchitectureTest`.
+  diagram's arrows are the ones in `ArchitectureTest`. It also checks that each exercise's number
+  and title are the same here and on its test, that its **Test:** line links to that test, and
+  that each link to a line still finds its name.
 
 `AnalysisTest` runs the Streamlord editors' check over every source file.
+
+`SolutionsTest` holds the lessons' solutions. It copies the project, pastes in every solution from
+this README where the solution says, switches every exercise on, and runs the copy's tests. Above
+each piece of solution code is a comment, `<!-- solution: … -->`, that says where the code goes;
+`SolutionsTest.kt` explains them. It builds the project a second time, so it is not part of
+`./gradlew test`. Run `./gradlew check`, which runs both, when you change a solution or the code a
+solution goes into.
 
 A new page follows the recipe in [lesson 5](#the-recipe). A new component's CSS needs a
 `…Classes` object and a line in `ClassesTest`, and it also goes in `ComponentStyles.FILES`.

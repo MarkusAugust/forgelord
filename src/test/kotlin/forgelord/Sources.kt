@@ -8,7 +8,8 @@ object Sources {
 
     /**
      * The folders the architecture is told in: those under `forgelord/`, two levels down, except
-     * the components inside `components/`. `quests`, `quests/client` and `quests/web` are three.
+     * the components inside `components/`. `lesson4quests`, `lesson4quests/client` and
+     * `lesson4quests/web` are three.
      */
     val folders: List<String> =
         root.walkTopDown().maxDepth(2)
@@ -37,9 +38,9 @@ object Sources {
 
     /**
      * Every line in [folder] that uses another of the [folders], by import or by full name. A
-     * folder's files are its own and not those of a folder below it: `quests` does not answer
-     * for `quests/web`. The `package` line is left out, and so are comments and text in strings:
-     * `"forgelord.ledger.url"` is the name of a setting, not a reference to code.
+     * folder's files are its own and not those of a folder below it: `lesson4quests` does not
+     * answer for `lesson4quests/web`. The `package` line is left out, and so are comments and text
+     * in strings: `"forgelord.ledger.url"` is the name of a setting, not a reference to code.
      */
     fun uses(folder: String): List<Use> =
         files(folder)
@@ -50,7 +51,7 @@ object Sources {
                     if (listOf("package ", "//", "/*", "*").any { text.startsWith(it) }) return@mapIndexedNotNull null
                     val code = text.replace(Regex(""""(?:\\.|[^"\\])*""""), "\"\"")
                     // The lower-case names after `forgelord.` are the package, and perhaps a function.
-                    val used = Regex("""\bforgelord((?:\.[a-z]+\b)+)""").find(code)?.let { folderOf(it.groupValues[1].drop(1).split(".")) }
+                    val used = Regex("""\bforgelord((?:\.[a-z][a-z0-9]*\b)+)""").find(code)?.let { folderOf(it.groupValues[1].drop(1).split(".")) }
                     if (used != null && used != folder) Use(used, "${file.path}:${index + 1}: $text") else null
                 }
             }
