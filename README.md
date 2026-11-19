@@ -151,7 +151,8 @@ the code until it passes. Every exercise with a test goes the same way:
    place.
 5. **Run it again,** until it passes. Then leave the test switched on.
 
-If you are stuck, the exercise has a solution, folded, and some have a hint before it. An
+Each exercise says what is new in it, in a line that starts with **New here:**. If you are stuck,
+open the hint, which points the way without giving the code. The solution is folded below it. An
 exercise that says it has no test tells you what to look for in the browser instead.
 
 The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put the cursor on it
@@ -162,14 +163,15 @@ or deleted lines above it, look for the name instead.
 
 ### Exercise 1: Change the greeting
 
-Make the page greet in your own words. There is no test: you are done when the page says it.
+Make the page greet in your own words, with the name still in them. There is no test: you are done
+when the page says it.
 
 **Where:** [`greetingFor`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L79) in `lesson1hello/HelloController.kt`.
 
 <details><summary>Solution</summary>
 
-Change the text in `greetingFor` in `HelloController.kt`, build, and reload the page. Then run the
-tests: `HelloControllerTest` checks the old words, so change them there too.
+Change the text in `greetingFor` in `HelloController.kt`, build, and reload the page. Nothing else
+has to change: the tests check that the name is in the greeting, not the words around it.
 
 </details>
 
@@ -179,11 +181,27 @@ Add a second field, "Where are you from?". "Ada" from "Hookford" gets "Hello, Ad
 with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep yours: the test
 checks only the name and the place.
 
+**New here:** a signal has to be named in every place it passes through, from the field to the
+greeting. And three cases to tell apart, where the greeting today has two.
+
 **Test:** [`the greeting says where you are from`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L24).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** `lesson1hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L75),
 [`greetingFor`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
+
+<details><summary>Hint</summary>
+
+Follow `name` through the file. It is a property of `HelloSignals`, a field in `helloForm`, an
+argument in `greet`, and a parameter of `greetingFor`. `from` goes beside it in each of the four.
+The page sends every signal it has, but the server only reads the ones `HelloSignals` has a
+property for.
+
+The greeting now has three cases: no name, a name with no place, and both. `if` with `else if`
+does it. So does `when` with nothing after it, which takes the first condition that is true:
+`when { name.isEmpty() -> "..."; else -> "..." }`, with each case on a line of its own.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -227,11 +245,28 @@ And in `greet`: `greetingFor(signals.name.trim(), signals.from.trim())`.
 Each greeting ends with its number: "Hello, Bo. Greeting number 2.". Open the page in two windows:
 they share the count.
 
+**New here:** something the server remembers between requests. `HelloController` is a bean: Spring
+makes one, and every request from every window goes to that one object. So a property of the class
+is shared by all of them.
+
 **Test:** [`the greetings are counted`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L35).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** `lesson1hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L48), and
 [`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
+
+<details><summary>Hint</summary>
+
+A property is declared inside the class's braces, above the functions: `private val greetings = ...`.
+
+An `Int` you add one to is nearly right. But two windows can click at the same moment, and both
+would read the same number. Java's `AtomicInteger` counts safely: `AtomicInteger()` starts at 0,
+and `incrementAndGet()` adds one and gives back the new number.
+
+Take the number in `greet`, before the stream is made, and put it in the text you pass to
+`greeting(...)`. A `$number` in a string puts the value in.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -262,10 +297,23 @@ exercise 2, call `greetingFor(signals.name.trim())` instead.
 Under the field, show what is in it, letter by letter as it is typed. The server is not asked:
 `dataText` tells Datastar to keep an element's text equal to a signal.
 
+**New here:** something the browser does by itself, with no request. `dataText` is a Datastar
+attribute, written with Streamlord's function of the same name.
+
 **Test:** [`the page shows the name as it is typed`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L43).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) in `lesson1hello/HelloController.kt`.
+
+<details><summary>Hint</summary>
+
+A `p { }` after the `input`, inside the same `div`. In its braces, `dataText(...)` takes the
+expression the text follows.
+
+Name the signal the way `dataBind` does, by its property: `signal(HelloSignals::name)` writes the
+expression for you. Both `dataText` and `signal` need an import.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -385,10 +433,23 @@ To try some CSS here, the file is
 
 When three or more have ridden out on a quest, its card shows a badge that says "Popular".
 
+**New here:** markup that depends on a value. Inside a tag's braces you are in ordinary Kotlin, so
+an `if` decides whether a tag is written. And a new part of LO-TEK, the badge.
+
 **Test:** [`a quest three have ridden out on gets a badge`](src/test/kotlin/forgelord/exercises/Lesson2NoticeExercisesTest.kt#L22).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`noticeCard`](src/main/kotlin/forgelord/lesson2notice/NoticeController.kt#L101) in `lesson2notice/NoticeController.kt`.
+
+<details><summary>Hint</summary>
+
+`noticeCard` already gets `riders`, the count, as a parameter. After the paragraph that shows the
+count, write an `if (riders >= 3) { ... }` with a `span { }` in it.
+
+LO-TEK's badge goes on the `span` as its button goes on a `button`: `lt(Lt.badge(...))`. The text
+goes in with `+`.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -467,6 +528,9 @@ with `TogetherPageClasses` beside it. It works as in [lesson 1](#try-some-css).
 A "Turn back" button beside "Ride out" takes one rider off the quest, never below none, and every
 open window shows the new count.
 
+**New here:** a second command on a page that has a stream. The command changes the state and
+sends no HTML.
+
 **Test:** [`a rider can turn back, but riders never go below none`](src/test/kotlin/forgelord/exercises/Lesson3TogetherExercisesTest.kt#L24).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
@@ -518,6 +582,8 @@ Nothing else: the stream already sends the cards whenever `riders` changes.
 In `board`, change `ElementPatchMode.INNER` to `ElementPatchMode.REPLACE`. Build, reload the page
 with the Network tab open, and ride out. There is no test: you are done when you can say what
 became of the stream, and `INNER` is back.
+
+**New here:** what keeps a stream open: the element that opened it.
 
 **Where:** [`board`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L107) in `lesson3together/TogetherController.kt`.
 
@@ -716,6 +782,9 @@ quest. The button posts to `/quests/{id}/turn-back`. The Ledger can already do i
 does not ask for it yet. When the Ledger does not take it, the one who clicked gets the toast a
 ride gives, ending "Nobody turned back."
 
+**New here:** one change that goes through every layer of the board: the client, the service,
+the controller and the view.
+
 **Test:** [`a rider can turn back on the board`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L39).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
@@ -835,11 +904,24 @@ with `QuestPageClasses` beside it. Try a rule there as in [lesson 1](#try-some-c
 
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
 
+**New here:** a rule of the form's. The server decides what is valid, and a `Fault` says which
+field it is about.
+
 **Test:** [`what has to be done fits in 300 characters`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L63).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`check`](src/main/kotlin/forgelord/lesson4quests/web/QuestForm.kt#L57) in `lesson4quests/web/QuestForm.kt`. No other file
 changes.
+
+<details><summary>Hint</summary>
+
+`check` makes a list of faults, with one `add(Fault(...))` for each thing that is wrong. The text
+has one rule today: it must not be empty. Look at how the name has two rules, empty and too long,
+in one `when`. Only the first that is true adds its fault, so a field never gets two.
+
+The limits are constants above `check`. Add one for 300.
+
+</details>
 
 <details><summary>Solution</summary>
 
@@ -877,6 +959,9 @@ real one. Read the Ledger first:
 Nailing up a quest with the name of one already on the post shows "<the name> is already on the
 post." at the name field, and nothing goes up. Capital letters do not count: "a tenth of the wood"
 is the same name as "A Tenth of the Wood".
+
+**New here:** a rule only the source can check. The board does not know which names are taken, so
+the Ledger refuses, and the refusal comes back to the page as a new `WriteResult`.
 
 **Test:** [`a quest cannot take the name of one already on the post`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L73).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
@@ -1011,6 +1096,8 @@ The test knows your page only by its URLs, and asks a running server for them:
 The names live in the controller, as the count does in lesson 3. Build the page until the test
 passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
 of your own, point 7.
+
+**New here:** nothing. Every part is from lessons 1 to 4, and this time you choose where it goes.
 
 **Test:** [`a name put on the watch reaches every open window`](src/test/kotlin/forgelord/exercises/Lesson5WatchExercisesTest.kt#L34).
 Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).

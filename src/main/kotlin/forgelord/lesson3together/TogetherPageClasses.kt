@@ -2,7 +2,7 @@ package forgelord.lesson3together
 
 import forgelord.page.stylesheet
 
-/** The classes in TogetherPage.css. There are none yet: a class you write there gets a constant here. */
+/** The classes in TogetherPage.css. A class you write there gets a constant here. */
 object TogetherPageClasses
 
 /** TogetherPage.css, for the page's `<style>`. Read once. */

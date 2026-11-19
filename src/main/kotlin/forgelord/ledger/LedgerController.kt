@@ -44,7 +44,7 @@ class LedgerController(
         @PathVariable id: String,
     ): ResponseEntity<Void> = answerFor(ledger.addRider(id))
 
-    /** The board has no button that asks for this yet. Putting one there is an exercise in the README. */
+    /** One rider fewer. Putting a button for this on the board is an exercise in the README. */
     @DeleteMapping("/ledger/quests/{id}/riders")
     fun removeRider(
         @PathVariable id: String,
