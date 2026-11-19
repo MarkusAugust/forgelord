@@ -14,13 +14,13 @@ src/main/kotlin/forgelord/
 ├── page/                          the page root, Content, fragment { }, stylesheet(), signals by property; widget/ in widget apps
 ├── components/                    reusable UI components, independent of any domain
 ├── lesson1hello/
-│   ├── HelloController.kt         lesson 1, all its Kotlin: the page, one command, the view
-│   └── HelloPage.css, HelloPageClasses.kt
+│   ├── HelloController.kt         lesson 1 in one file: the page, one command, the view
+│   └── HelloPage.css, HelloPageClasses.kt   the page's CSS, with no rules yet
 ├── lesson2notice/
-│   ├── NoticeController.kt        lesson 2, all its Kotlin: a list, and a command that answers with a card
+│   ├── NoticeController.kt        lesson 2 in one file: a list, and a command that answers with a card
 │   └── NoticePage.css, NoticePageClasses.kt
 ├── lesson3together/
-│   ├── TogetherController.kt      lesson 3, all its Kotlin: a StateFlow, a stream, and a command that answers 204
+│   ├── TogetherController.kt      lesson 3 in one file: a StateFlow, a stream, and a command that answers 204
 │   └── TogetherPage.css, TogetherPageClasses.kt
 ├── lesson4quests/                 lesson 4, the board
 │   ├── QuestService.kt            loads the board from the Ledger and keeps it as one StateFlow

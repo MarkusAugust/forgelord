@@ -41,8 +41,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
  * 4. The server reads them into [HelloSignals], and answers with one element: the greeting.
  * 5. Datastar finds the element on the page with the same id and puts the new one in its place.
  *
- * All the Kotlin is in this one file so it can be read from top to bottom. A bigger page splits it
- * into a controller and a view, as the board in lesson4quests/web/ does.
+ * The page, the command and the view are in this one file, so it can be read from top to bottom. A
+ * bigger page splits it into a controller and a view, as the board in lesson4quests/web/ does.
  */
 @RestController
 class HelloController(

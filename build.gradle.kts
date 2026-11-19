@@ -77,4 +77,8 @@ sourceSets.main {
 
 tasks.test {
     useJUnitPlatform()
+    // A failing test says why in the terminal too, not only where.
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }

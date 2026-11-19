@@ -119,7 +119,9 @@ What you need to read [`HelloController.kt`](src/main/kotlin/forgelord/lesson1he
   plain Kotlin. When a lambda is the last argument, it is written after the parentheses, as in
   `page(...) { ... }`, and when it is the only one, `()` is left out.
 - `css = helloPageCss` in `page(...)`, and `size = HeadingSize.XL`. An argument given by its name,
-  so the order does not matter and the call says what each value is.
+  so the order does not matter and the call says what each value is. `helloPageCss` is the one
+  name here that is not in this file. It is the lesson's own CSS, which has no rules yet:
+  [Try some CSS](#try-some-css), after the exercises, says where it lives.
 - `+"Hello Gallowmark"`. `+` before a string adds it as text to the tag it is in.
 - `private fun FlowContent.greeting(text: String)`. An extension function: it is called as if it
   were a method on `FlowContent`, kotlinx.html's type for a tag that can hold other tags. This is
@@ -143,7 +145,8 @@ the code until it passes. Every exercise with a test goes the same way:
 1. **Open the test.** The exercise has a line that starts with **Test:**. Its link opens the test.
 2. **Switch it on.** Delete the line above the test that starts with `@Disabled`.
 3. **Run it, and see it fail.** In IntelliJ IDEA, click the green arrow beside the test. From a
-   terminal, run the lesson's tests: `./gradlew test --tests '*Lesson1HelloExercisesTest'`.
+   terminal, run the lesson's tests: `./gradlew test --tests '*Lesson1HelloExercisesTest'`, with
+   the name of the file the test is in.
 4. **Change the code.** The line that starts with **Where:** says in which file, and links to the
    place.
 5. **Run it again,** until it passes. Then leave the test switched on.
@@ -155,7 +158,7 @@ The solutions leave out the imports. When a name turns red in IntelliJ IDEA, put
 and press Alt+Enter (⌥↩ on a Mac) to import it.
 
 The links open a file at a line, as the file is before any exercise is solved. Once you have added
-lines above it, look for the name instead.
+or deleted lines above it, look for the name instead.
 
 ### Exercise 1: Change the greeting
 
@@ -177,7 +180,7 @@ with no place, still "Hello, Ada.". If you changed the words in exercise 1, keep
 checks only the name and the place.
 
 **Test:** [`the greeting says where you are from`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L24).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** `lesson1hello/HelloController.kt`, in four places: [`HelloSignals`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L75),
 [`greetingFor`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L79), [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) and [`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
@@ -225,7 +228,7 @@ Each greeting ends with its number: "Hello, Bo. Greeting number 2.". Open the pa
 they share the count.
 
 **Test:** [`the greetings are counted`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L35).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** `lesson1hello/HelloController.kt`: a new field in [`HelloController`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L48), and
 [`greet`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L62).
@@ -260,7 +263,7 @@ Under the field, show what is in it, letter by letter as it is typed. The server
 `dataText` tells Datastar to keep an element's text equal to a signal.
 
 **Test:** [`the page shows the name as it is typed`](src/test/kotlin/forgelord/exercises/Lesson1HelloExercisesTest.kt#L43).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`helloForm`](src/main/kotlin/forgelord/lesson1hello/HelloController.kt#L81) in `lesson1hello/HelloController.kt`.
 
@@ -295,7 +298,8 @@ No exercise asks for CSS, but every lesson has a place to try it. Lesson 1's is
 the page already, and has no rules yet. A class of your own goes in three places.
 
 A constant, in [`HelloPageClasses.kt`](src/main/kotlin/forgelord/lesson1hello/HelloPageClasses.kt).
-The object has no braces yet, so give it some:
+An `object` is a class with exactly one instance, and here it only holds names. `const val` is a
+value known when the code is compiled. The object has no braces yet, so give it some:
 
 ```kotlin
 object HelloPageClasses {
@@ -312,7 +316,11 @@ The rule, in `HelloPage.css`, inside the braces of `@layer forgelord-page`:
 ```
 
 And the class on the tag, in `greeting` in `HelloController.kt`: `p(HelloPageClasses.GREETING) {`
-in place of `p {`. Build, and the greeting has the colour.
+in place of `p {`. A tag function takes the tag's class in its parentheses. Build, and the
+greeting has the colour.
+
+The `val helloPageCss` under the object reads the CSS file, the first time it is asked for, and
+`page(...)` puts it in the page's `<style>`. You do not have to change it.
 
 Three things to know:
 
@@ -378,7 +386,7 @@ To try some CSS here, the file is
 When three or more have ridden out on a quest, its card shows a badge that says "Popular".
 
 **Test:** [`a quest three have ridden out on gets a badge`](src/test/kotlin/forgelord/exercises/Lesson2NoticeExercisesTest.kt#L22).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`noticeCard`](src/main/kotlin/forgelord/lesson2notice/NoticeController.kt#L101) in `lesson2notice/NoticeController.kt`.
 
@@ -460,7 +468,7 @@ A "Turn back" button beside "Ride out" takes one rider off the quest, never belo
 open window shows the new count.
 
 **Test:** [`a rider can turn back, but riders never go below none`](src/test/kotlin/forgelord/exercises/Lesson3TogetherExercisesTest.kt#L24).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** `lesson3together/TogetherController.kt`: a new command beside [`rideOut`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L119), and a
 button in [`cards`](src/main/kotlin/forgelord/lesson3together/TogetherController.kt#L148).
@@ -709,7 +717,7 @@ does not ask for it yet. When the Ledger does not take it, the one who clicked g
 ride gives, ending "Nobody turned back."
 
 **Test:** [`a rider can turn back on the board`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L39).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** four files, from the client to the page. In each, the new code goes beside what "Ride
 out" has there:
@@ -828,7 +836,7 @@ with `QuestPageClasses` beside it. Try a rule there as in [lesson 1](#try-some-c
 "What has to be done" may be at most 300 characters. Longer, and the form says so at that field.
 
 **Test:** [`what has to be done fits in 300 characters`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L63).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** [`check`](src/main/kotlin/forgelord/lesson4quests/web/QuestForm.kt#L57) in `lesson4quests/web/QuestForm.kt`. No other file
 changes.
@@ -871,7 +879,7 @@ post." at the name field, and nothing goes up. Capital letters do not count: "a 
 is the same name as "A Tenth of the Wood".
 
 **Test:** [`a quest cannot take the name of one already on the post`](src/test/kotlin/forgelord/exercises/Lesson4QuestsExercisesTest.kt#L73).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** five files, from the Ledger to the page. Take them in this order:
 
@@ -986,7 +994,9 @@ Every page in this app is made the same way. Lesson 3's file has most of it in o
    is what puts your page under the test.
 8. **CSS, if LO-TEK is not enough.** A CSS file, a `…Classes` object beside it with the `val` that
    reads the file, that `val` passed to `page(...)`, and a line in `ClassesTest`. Lessons 1 to 3
-   have all four, with no rules yet: copy `HelloPage.css` and `HelloPageClasses.kt`.
+   have all four, with no rules yet: copy `HelloPage.css` and `HelloPageClasses.kt`, give them
+   your page's name, and change the path in `stylesheet(...)` to the new file. With the old path
+   the page gets lesson 1's CSS, and no test says so.
 
 ### Exercise 12: The watch
 
@@ -998,13 +1008,12 @@ The test knows your page only by its URLs, and asks a running server for them:
 - `POST /watch` is the command. It reads the signal `name`, puts the name on the watch, and
   answers 204.
 
-The names live in the controller, as the count does in lesson 3. Remove `@Disabled`, run the test,
-and build the page until it passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment
-the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
+The names live in the controller, as the count does in lesson 3. Build the page until the test
+passes. `ArchitectureTest` and `ReadmeTest` fail too, from the moment the folder is there: that is point 2 of the recipe. The exercise's test stands in for a test class
 of your own, point 7.
 
 **Test:** [`a name put on the watch reaches every open window`](src/test/kotlin/forgelord/exercises/Lesson5WatchExercisesTest.kt#L34).
-Delete the `@Disabled` line above it, and run it.
+Delete the `@Disabled` line above it, and run it, as in [the steps](#how-to-do-an-exercise).
 
 **Where:** a new folder, `src/main/kotlin/forgelord/lesson5watch/`. A row in
 [`MAY_USE`](src/test/kotlin/forgelord/ArchitectureTest.kt#L51). A box, an arrow and a line in

@@ -118,7 +118,10 @@ class ReadmeTest {
             }.map { it.lineSequence().first() }
 
         assertEquals(emptyList(), wrong, "The line above the one **Test:** links to has to be @Disabled(\"<the exercise's heading>\"). It is not for")
-        assertEquals(exerciseTests.count { it.startsWith("@Disabled") }, linked.size, "The switched-off tests, and the exercises with a **Test:** line, differ in number")
+        // A test that no exercise links to: its heading is there, but has no **Test:** line.
+        val linkedHeadings = linked.map { it.lineSequence().first() }
+        val unlinked = Regex("""@Disabled\("([^"]+)"\)""").findAll(exerciseTests.joinToString("\n")).map { it.groupValues[1] }.filterNot { it in linkedHeadings }.toList()
+        assertEquals(emptyList(), unlinked, "Exercises with a test, and no **Test:** line that links to it")
     }
 
     @Test
