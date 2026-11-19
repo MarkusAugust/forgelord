@@ -1,7 +1,7 @@
 # Forgelord
 
-A starter for web apps in Kotlin and Spring MVC, with [Streamlord](https://streamlord.sobernetics.no)
-and [LO-TEK](https://lo-tek.sobernetics.no). Five lessons, each a step from the one before: a page
+A course in building server-rendered web apps in Kotlin and Spring MVC, with
+[Streamlord](https://streamlord.sobernetics.no) and [LO-TEK](https://lo-tek.sobernetics.no). Five lessons, each a step from the one before: a page
 that says hello, a list with a button, the same list kept up to date in every open window, a
 quest board from [Gallowmark](https://github.com/MarkusAugust/gallowmark) that reads its quests
 from another service, and a page you build yourself. Nothing here needs Node or npm.
